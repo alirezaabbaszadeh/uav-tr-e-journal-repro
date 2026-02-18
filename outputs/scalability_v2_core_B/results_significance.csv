@@ -1,2 +1,2 @@
 comparison_id,method_a,method_b,metric,test_name,p_value,p_value_adj,correction_method,effect_direction,effect_size,ci_low,ci_high,n_pairs,significant_flag
-ortools_main_vs_pyvrp_baseline_runtime_total_s,ortools_main,pyvrp_baseline,runtime_total_s,wilcoxon_signed_rank,0.25,0.25,holm-bonferroni,a_better,-1.0,-0.1283928869997908,-0.00941596800021216,3,0
+ortools_main_vs_pyvrp_baseline_runtime_total_s,ortools_main,pyvrp_baseline,runtime_total_s,wilcoxon_signed_rank,0.75,0.75,holm-bonferroni,a_better,-0.3333333333333333,-0.32433145199865976,0.04211542799930612,3,0
