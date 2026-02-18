@@ -1,0 +1,31 @@
+{
+  "solver": {
+    "time_limits": {
+      "exact_n10_s": 15,
+      "bound_n20_s": 15,
+      "bound_n40_s": 15,
+      "scalability_n80_s": 20,
+      "heuristic_default_s": 15
+    },
+    "pyvrp_max_runtime_s": 15
+  },
+  "profiles": {
+    "scalability": {
+      "seeds": [1],
+      "sizes": [],
+      "include_scalability": true,
+      "bs_counts": [4, 7],
+      "deltas_min": [10],
+      "edge_samples": [10],
+      "lambda_out": [0.5, 1.0],
+      "lambda_tw": [1.0],
+      "max_cases": 0
+    }
+  },
+  "comm": {
+    "snr_threshold_db": 25.0
+  },
+  "tw": {
+    "family": "A"
+  }
+}

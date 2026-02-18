@@ -1,6 +1,6 @@
 method,N,feasible_rate
 highs_exact_bound,10,1.0
-highs_exact_bound,20,1.0
+highs_exact_bound,20,0.75
 highs_exact_bound,40,0.0
 ortools_main,10,1.0
 ortools_main,20,1.0
