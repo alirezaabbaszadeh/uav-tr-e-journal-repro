@@ -1,5 +1,5 @@
-Reliability-aware UAV routing with soft time-window penalties.
-Dual reproducibility path: venv and Docker, fully scripted.
-Exact/bound/gap policy enforced by size regime.
-Frozen benchmarks and statistical tests included for review.
-Anonymous and camera-ready bundles generated from code.
+Family-B soft windows cut OR-Tools on-time at N=20 from 63.75% to 28.75%.
+OR-Tools stays feasible at N=40; PyVRP is infeasible at N=40.
+At N=20, OR-Tools gap is 7.74-8.03% vs PyVRP 15.23-16.88%.
+N=80 is reported as scalability-only, with no bound/gap claims.
+Reproducibility audit passed 18/18 gates with frozen benchmarks.
