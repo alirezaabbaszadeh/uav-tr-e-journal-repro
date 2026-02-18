@@ -1,0 +1,15 @@
+{
+  "profiles": {
+    "quick": {
+      "seeds": [1],
+      "sizes": [10],
+      "include_scalability": false,
+      "bs_counts": [4],
+      "deltas_min": [10],
+      "edge_samples": [10],
+      "lambda_out": [0.5],
+      "lambda_tw": [1.0],
+      "max_cases": 1
+    }
+  }
+}

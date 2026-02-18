@@ -1,0 +1,16 @@
+comparison_id,method_a,method_b,metric,test_name,p_value,p_value_adj,correction_method,effect_direction,effect_size,ci_low,ci_high,n_pairs,significant_flag
+highs_exact_bound_vs_ortools_main_on_time_pct,highs_exact_bound,ortools_main,on_time_pct,wilcoxon_signed_rank,1.0,1.0,holm-bonferroni,tie,0.0,,,1,0
+highs_exact_bound_vs_ortools_main_total_tardiness_min,highs_exact_bound,ortools_main,total_tardiness_min,wilcoxon_signed_rank,1.0,1.0,holm-bonferroni,tie,0.0,,,1,0
+highs_exact_bound_vs_ortools_main_total_energy,highs_exact_bound,ortools_main,total_energy,wilcoxon_signed_rank,1.0,1.0,holm-bonferroni,b_better,1.0,,,1,0
+highs_exact_bound_vs_ortools_main_risk_mean,highs_exact_bound,ortools_main,risk_mean,wilcoxon_signed_rank,1.0,1.0,holm-bonferroni,tie,0.0,,,1,0
+highs_exact_bound_vs_ortools_main_runtime_total_s,highs_exact_bound,ortools_main,runtime_total_s,wilcoxon_signed_rank,1.0,1.0,holm-bonferroni,b_better,0.3333333333333333,-14.096784312000636,0.1664441099992473,3,0
+highs_exact_bound_vs_pyvrp_baseline_on_time_pct,highs_exact_bound,pyvrp_baseline,on_time_pct,wilcoxon_signed_rank,1.0,1.0,holm-bonferroni,tie,0.0,,,1,0
+highs_exact_bound_vs_pyvrp_baseline_total_tardiness_min,highs_exact_bound,pyvrp_baseline,total_tardiness_min,wilcoxon_signed_rank,1.0,1.0,holm-bonferroni,tie,0.0,,,1,0
+highs_exact_bound_vs_pyvrp_baseline_total_energy,highs_exact_bound,pyvrp_baseline,total_energy,wilcoxon_signed_rank,1.0,1.0,holm-bonferroni,tie,0.0,,,1,0
+highs_exact_bound_vs_pyvrp_baseline_risk_mean,highs_exact_bound,pyvrp_baseline,risk_mean,wilcoxon_signed_rank,1.0,1.0,holm-bonferroni,tie,0.0,,,1,0
+highs_exact_bound_vs_pyvrp_baseline_runtime_total_s,highs_exact_bound,pyvrp_baseline,runtime_total_s,wilcoxon_signed_rank,1.0,1.0,holm-bonferroni,b_better,0.3333333333333333,-14.111577087000114,0.1519016799993551,3,0
+ortools_main_vs_pyvrp_baseline_on_time_pct,ortools_main,pyvrp_baseline,on_time_pct,wilcoxon_signed_rank,1.0,1.0,holm-bonferroni,b_better,-1.0,-40.0,0.0,2,0
+ortools_main_vs_pyvrp_baseline_total_tardiness_min,ortools_main,pyvrp_baseline,total_tardiness_min,wilcoxon_signed_rank,1.0,1.0,holm-bonferroni,b_better,1.0,0.0,25.3616082032965,2,0
+ortools_main_vs_pyvrp_baseline_total_energy,ortools_main,pyvrp_baseline,total_energy,wilcoxon_signed_rank,0.5,1.0,holm-bonferroni,a_better,-1.0,-1165.2023901234193,-226.9329751948353,2,0
+ortools_main_vs_pyvrp_baseline_risk_mean,ortools_main,pyvrp_baseline,risk_mean,wilcoxon_signed_rank,1.0,1.0,holm-bonferroni,b_better,1.0,0.0,0.04596273291925465,2,0
+ortools_main_vs_pyvrp_baseline_runtime_total_s,ortools_main,pyvrp_baseline,runtime_total_s,wilcoxon_signed_rank,0.5,1.0,holm-bonferroni,a_better,-0.3333333333333333,-0.014792774999477842,0.0023244989997692755,3,0

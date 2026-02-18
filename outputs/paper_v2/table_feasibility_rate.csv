@@ -1,0 +1,4 @@
+method,N,feasible_rate
+highs_exact_bound,10,1.0
+ortools_main,10,1.0
+pyvrp_baseline,10,1.0

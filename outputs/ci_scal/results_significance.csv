@@ -1,0 +1,2 @@
+comparison_id,method_a,method_b,metric,test_name,p_value,p_value_adj,correction_method,effect_direction,effect_size,ci_low,ci_high,n_pairs,significant_flag
+ortools_main_vs_pyvrp_baseline_runtime_total_s,ortools_main,pyvrp_baseline,runtime_total_s,wilcoxon_signed_rank,1.0,1.0,holm-bonferroni,a_better,-1.0,,,1,0

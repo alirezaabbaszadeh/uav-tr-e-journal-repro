@@ -1,0 +1,4 @@
+method,risk_mean_avg
+highs_exact_bound,0.0543478260869565
+ortools_main,0.25982214572576023
+pyvrp_baseline,0.0434782608695652

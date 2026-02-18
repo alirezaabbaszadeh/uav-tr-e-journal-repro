@@ -1,0 +1,5 @@
+Reliability-aware UAV routing with soft time-window penalties.
+Dual reproducibility path: venv and Docker, fully scripted.
+Exact/bound/gap policy enforced by size regime.
+Frozen benchmarks and statistical tests included for review.
+Anonymous and camera-ready bundles generated from code.

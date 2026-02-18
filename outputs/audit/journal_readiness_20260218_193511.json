@@ -1,0 +1,96 @@
+{
+  "generated_at_utc": "2026-02-18T19:35:11.131955+00:00",
+  "summary": {
+    "total_gates": 14,
+    "critical_failed": 2,
+    "high_failed": 4,
+    "medium_failed": 0,
+    "overall_pass": false
+  },
+  "gates": [
+    {
+      "gate_id": "files.main_a_exists",
+      "severity": "critical",
+      "passed": true,
+      "message": "outputs/main_table_v2_core/results_main.csv found"
+    },
+    {
+      "gate_id": "files.scal_a_exists",
+      "severity": "critical",
+      "passed": true,
+      "message": "outputs/scalability_v2_core/results_main.csv found"
+    },
+    {
+      "gate_id": "schema.main_a",
+      "severity": "critical",
+      "passed": true,
+      "message": "results_main schema check for TW-A main-table"
+    },
+    {
+      "gate_id": "gap_sanity.main_a",
+      "severity": "critical",
+      "passed": false,
+      "message": "TW-A main gap sanity: neg=61, inf=37"
+    },
+    {
+      "gate_id": "exact_cert.main_a",
+      "severity": "critical",
+      "passed": false,
+      "message": "TW-A main exact rows=16, uncertified_exact_rows=12"
+    },
+    {
+      "gate_id": "trace.main_a_git_sha",
+      "severity": "high",
+      "passed": false,
+      "message": "TW-A main unknown git_sha count=144"
+    },
+    {
+      "gate_id": "schema.scal_a",
+      "severity": "critical",
+      "passed": true,
+      "message": "results_main schema check for TW-A scalability"
+    },
+    {
+      "gate_id": "policy.scal_a",
+      "severity": "critical",
+      "passed": true,
+      "message": "TW-A scalability rows=32, invalid_policy_rows=0"
+    },
+    {
+      "gate_id": "files.main_b_exists",
+      "severity": "high",
+      "passed": false,
+      "message": "outputs/main_table_v2_core_B/results_main.csv missing"
+    },
+    {
+      "gate_id": "files.scal_b_exists",
+      "severity": "high",
+      "passed": false,
+      "message": "outputs/scalability_v2_core_B/results_main.csv missing"
+    },
+    {
+      "gate_id": "robustness.tw_families",
+      "severity": "high",
+      "passed": false,
+      "message": "observed tw_families=['A']"
+    },
+    {
+      "gate_id": "files.root_triplet",
+      "severity": "medium",
+      "passed": true,
+      "message": "root outputs/results_*.csv presence"
+    },
+    {
+      "gate_id": "schema.root_routes",
+      "severity": "medium",
+      "passed": true,
+      "message": "results_routes schema"
+    },
+    {
+      "gate_id": "schema.root_significance",
+      "severity": "medium",
+      "passed": true,
+      "message": "results_significance schema"
+    }
+  ]
+}

@@ -1,0 +1,83 @@
+name: quick-ci
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  quick:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-lock.txt
+          pip install -e .
+
+      - name: Unit and integration tests
+        run: pytest
+
+      - name: Quick deterministic run
+        run: |
+          python -m uavtre.run_experiments \
+            --config configs/base.json \
+            --profile quick \
+            --output outputs/results_main.csv \
+            --max-cases 1
+
+      - name: Journal smoke (main and scalability)
+        run: |
+          python -m uavtre.run_benchmarks \
+            --config configs/base.json \
+            --profile main_table \
+            --profile-override configs/profiles/ci_journal_smoke.json \
+            --output outputs/ci_main/results_main.csv \
+            --benchmark-dir benchmarks/frozen/ci_main \
+            --max-cases 3
+
+          python -m uavtre.run_benchmarks \
+            --config configs/base.json \
+            --profile scalability \
+            --profile-override configs/profiles/ci_journal_smoke.json \
+            --output outputs/ci_scal/results_main.csv \
+            --benchmark-dir benchmarks/frozen/ci_scal \
+            --max-cases 2
+
+      - name: Validate output schemas and sanity
+        run: |
+          python - <<'PY'
+          import numpy as np
+          import pandas as pd
+          from uavtre.io.schema import (
+              RESULTS_MAIN_COLUMNS,
+              RESULTS_ROUTES_COLUMNS,
+              RESULTS_SIGNIFICANCE_COLUMNS,
+          )
+
+          targets = [
+              'outputs/results_main.csv',
+              'outputs/ci_main/results_main.csv',
+              'outputs/ci_scal/results_main.csv',
+          ]
+          for path in targets:
+              df_main = pd.read_csv(path)
+              assert list(df_main.columns) == RESULTS_MAIN_COLUMNS
+              assert len(df_main) >= 1
+
+              finite_gap = pd.to_numeric(df_main['gap_pct'], errors='coerce').dropna()
+              assert not np.isinf(finite_gap.to_numpy()).any()
+              assert (finite_gap >= -1e-9).all()
+
+          df_routes = pd.read_csv('outputs/results_routes.csv')
+          df_sig = pd.read_csv('outputs/results_significance.csv')
+          assert list(df_routes.columns) == RESULTS_ROUTES_COLUMNS
+          assert list(df_sig.columns) == RESULTS_SIGNIFICANCE_COLUMNS
+          PY

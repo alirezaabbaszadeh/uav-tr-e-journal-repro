@@ -1,0 +1,2 @@
+comparison_id,method_a,method_b,metric,test_name,p_value,effect_direction,significant_flag
+ortools_main_vs_pyvrp_baseline_runtime_total_s,ortools_main,pyvrp_baseline,runtime_total_s,wilcoxon_signed_rank,0.0078125,a_better,1

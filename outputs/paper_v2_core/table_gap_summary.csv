@@ -1,0 +1,7 @@
+method,N,gap_pct_mean,gap_pct_std,best_bound_mean,best_bound_std,incumbent_obj_mean,incumbent_obj_std
+highs_exact_bound,20,,,4906668.776789625,,,
+highs_exact_bound,40,,,,,,
+ortools_main,20,8.937821954704539,,4906668.776789625,,5388262.044807436,
+ortools_main,40,,,,,9701847.213989858,
+pyvrp_baseline,20,19.93168333616533,,4906668.776789625,,6128102.826727559,
+pyvrp_baseline,40,,,,,,

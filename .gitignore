@@ -1,0 +1,33 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+
+# Virtual environments
+.venv/
+venv/
+
+# IDE
+.idea/
+.vscode/
+
+# Build artifacts
+build/
+dist/
+*.egg-info/
+
+# Runtime artifacts
+outputs/*.csv
+outputs/figures/
+*.log
+
+# OS
+.DS_Store
+
+# Generated review bundles
+submission/anonymous/**
+!submission/anonymous/.gitkeep
+submission/camera_ready/**
+!submission/camera_ready/.gitkeep

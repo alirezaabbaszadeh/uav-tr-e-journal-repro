@@ -1,0 +1,15 @@
+{
+  "profiles": {
+    "scalability": {
+      "seeds": [1, 2, 3, 4, 5],
+      "sizes": [],
+      "include_scalability": true,
+      "bs_counts": [4],
+      "deltas_min": [10],
+      "edge_samples": [10],
+      "lambda_out": [0.5],
+      "lambda_tw": [1.0],
+      "max_cases": 0
+    }
+  }
+}

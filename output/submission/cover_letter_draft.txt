@@ -1,0 +1,10 @@
+Dear Editor,
+
+We submit our manuscript on reliability-aware multi-UAV pickup and delivery under time-window constraints for consideration in Transportation Research Part E.
+
+The accompanying repository is structured for journal-grade reproducibility, including deterministic profiles, frozen benchmark instances, solver baselines, and automated anonymous/camera-ready package generation.
+
+Scientific evidence follows size-specific claim regimes: exact results for N<=10, incumbent+bound+gap for N=20/40, and scalability-only reporting for N=80.
+
+Sincerely,
+Corresponding Author
