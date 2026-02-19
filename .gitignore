@@ -23,6 +23,17 @@ outputs/*.csv
 outputs/figures/
 *.log
 
+# Heavy generated campaign artifacts (keep repo lightweight)
+outputs/campaigns/
+
+# Auto-generated audit snapshots (canonical audited files can be force-added if needed)
+outputs/audit/journal_readiness_*.json
+
+# Generated release helper files
+output/submission/GITHUB_RELEASE_BODY_*.md
+output/submission/PUSH_INSTRUCTIONS_*.md
+output/submission/ARTIFACT_SHA256_*.txt
+
 # OS
 .DS_Store
 
