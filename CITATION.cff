@@ -1,7 +1,7 @@
 cff-version: 1.2.0
 message: "If you use this repository, please cite the software package and related article."
 title: "Reliability-Aware Multi-UAV Pickup and Delivery under Communication Risk and Soft Time Windows"
-version: "v1.3.0-journal-repro"
+version: "v1.4.0-journal-repro"
 type: software
 authors:
   - family-names: "Abbaszadeh"

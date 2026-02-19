@@ -1,6 +1,6 @@
 \label{sec:experiments}
 
-All results are locked to the audited campaign \code{\CampaignID}. The campaign is executed under WSL2 on a CPU-sharded setup (12 logical shards) because the core solvers (OR-Tools, HiGHS, PyVRP) are CPU-bound and do not benefit materially from GPU acceleration.
+All numerical evidence in this manuscript is locked to an audited campaign with frozen benchmark instances and recorded execution metadata. Experiments are executed under WSL2 on a CPU-sharded setup (12 logical shards), because the core solvers used here (OR-Tools, HiGHS, PyVRP) are CPU-bound and do not benefit materially from consumer GPU acceleration.
 
 \subsection{Scenario matrix}
 We evaluate two time-window families (A baseline and B stress) and vary:
@@ -13,25 +13,25 @@ We evaluate two time-window families (A baseline and B stress) and vary:
 \item Risk sampling resolution $K$ (core: $10$; sensitivity stage includes $\{5,10,20\}$).
 \end{itemize}
 
-The full run plan (including shard commands, config overrides, and frozen benchmark instances) is recorded in the campaign manifests and command log.
+The full run plan (including shard commands, configuration overrides, and frozen instance identifiers) is recorded in the campaign manifests and command log.
 
 \subsection{Baselines and fairness}
 We compare three methods:
 \begin{itemize}[leftmargin=*]
-\item \textbf{OR-Tools} as the main heuristic with soft time windows.
-\item \textbf{HiGHS} as an exact/bound engine for small/medium sizes.
-\item \textbf{PyVRP} as a baseline metaheuristic, retaining hard-TW behavior as a contrasting operational policy.
+\item \textbf{OR-Tools (soft TW)} as the main heuristic.
+\item \textbf{HiGHS (MIP)} as an exact/bound engine for small/medium sizes.
+\item \textbf{PyVRP (hard TW)} as a baseline representing strict feasibility.
 \end{itemize}
 
 To ensure comparability, we apply per-instance time limits to solvers (heuristics typically 30 seconds; HiGHS bounded by 30--45 seconds depending on size). For $N=80$, we do not attempt bound/gap evidence and report scalability-only metrics.
 
 \subsection{Metrics}
-For each solved instance we record:
+For each instance and method, we record:
 \begin{itemize}[leftmargin=*]
 \item \textbf{Service quality:} on-time rate (percentage of customers with zero tardiness) and total tardiness (minutes).
-\item \textbf{Operational cost proxies:} total energy proxy (distance-scaled) and communication risk (mean arc outage risk; and a max-route-risk summary).
+\item \textbf{Operational cost proxies:} energy proxy and communication risk summaries (mean arc outage risk and max-route risk).
 \item \textbf{Compute:} edge-risk preprocessing time, solve time, and total runtime.
-\item \textbf{Bound-gap evidence:} incumbent objective, best available bound, and a sanitized nonnegative gap (only in the bound-gap regime).
+\item \textbf{Bound-gap evidence:} incumbent objective, best available bound, and a sanitized nonnegative gap (only for $N\in\{20,40\}$).
 \end{itemize}
 
 \subsection{Statistical protocol}

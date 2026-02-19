@@ -1,12 +1,16 @@
-All manuscript tables and figures are generated from a single locked evidence campaign (\code{\CampaignID}). The campaign directory contains manifests (campaign manifest, run plan, environment snapshot, and command log), frozen benchmark instances, and aggregated result tables.
+All manuscript tables and figures are generated from a single immutable evidence campaign that accompanies the repository release. The campaign directory contains frozen benchmark instances, a full run plan, an environment snapshot, a command log, and aggregated paper tables. No solver reruns are required to rebuild the manuscript: the \code{submit\_v2} pipeline post-processes the locked campaign artifacts and regenerates all LaTeX tables/figures.
 
-The companion repository provides:
-\begin{itemize}[leftmargin=*]
-\item deterministic scripts to regenerate paper tables/figures from campaign outputs,
-\item an evidence index and claim guard that validate claim-to-evidence bindings, and
-\item anonymous and camera-ready reviewer bundles.
-\end{itemize}
+The TR-E upload pack additionally includes an evidence index, a claim guard report, an audit recheck report, a table/figure index, and SHA256 checksums. Together, these artifacts allow reviewers to trace reported results back to auditable sources.
 
-A minimal reproduction path is: (i) obtain the repository release, (ii) run the submit pipeline for \code{\CampaignID}, and (iii) verify the generated TR-E upload pack checksums.
+A minimal reproduction path is:
+\begin{verbatim}
+PYTHONPATH=src .venv/bin/python -m uavtre.submit_v2.run \
+  --campaign-id <campaign_id> \
+  --campaign-root outputs/campaigns \
+  --mode full --resume
 
-We follow the principles of reproducible computational research as advocated in \citet{peng2011,stodden2016}.
+python3 scripts/submit_v2/check_tr_e_pack.py \
+  --campaign-id <campaign_id>
+\end{verbatim}
+
+We follow reproducible computational research principles as advocated by \citet{peng2011,stodden2016}.

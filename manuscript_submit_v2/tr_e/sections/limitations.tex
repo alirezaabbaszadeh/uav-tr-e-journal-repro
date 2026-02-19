@@ -1,15 +1,18 @@
 \label{sec:limitations}
 
-This study has several limitations.
+Our study is intentionally scoped to produce an operationally interpretable reliability signal and a reviewer-safe, reproducible evidence package. Several limitations point to clear research extensions.
 
-\paragraph{Energy model.}
-We use a linear energy proxy proportional to flight distance. Real multirotor energy consumption depends on payload, speed, and aerodynamics \citep{dorling2017}. Extending the model to payload-dependent power curves is a natural next step.
+\paragraph{Energy modeling granularity.}
+We use a linear energy proxy proportional to flight distance. Real multirotor energy consumption depends on payload, speed, climb/descend profiles, and aerodynamic effects \citep{dorling2017}. Future work can incorporate payload-dependent power curves and speed decisions, potentially turning the objective into a richer energy--time tradeoff.
 
-\paragraph{Communication model.}
-The outage-risk model is a simplified air-to-ground abstraction based on LoS probability and excess losses \citep{alhourani2014,zeng2016}. It does not capture interference, network load, handover dynamics, or temporal fading. Nevertheless, it produces a nontrivial risk signal (Table~\ref{tab:risk_signal}) and supports sensitivity analysis across $B$, $\Delta$, and $K$.
+\paragraph{Communication modeling scope.}
+The outage-risk model is a simplified air-to-ground abstraction based on LoS probability and excess losses \citep{alhourani2014,zeng2016}. It does not capture interference, network load, handover dynamics, or temporal fading. Nevertheless, the risk signal is nontrivial and method-dependent (Table~\ref{tab:risk_signal}), and it supports controlled sensitivity analyses over $B$, $\Delta$, and $K$.
 
-\paragraph{Routing abstraction.}
-We assume straight-line travel between nodes and static base-station coordinates. Urban airspace restrictions, no-fly zones, and obstacle-aware 3D routing would further constrain feasible trajectories.
+\paragraph{Geometric and regulatory constraints.}
+We assume straight-line travel between nodes and static base-station coordinates. Urban airspace restrictions, no-fly zones, obstacle-aware 3D routing, and safety buffers would further constrain feasible trajectories.
+
+\paragraph{Algorithmic scope.}
+We deliberately focus on a CPU-bound solver stack (OR-Tools, HiGHS, PyVRP) that supports reproducible review. Learning-based approaches (e.g., graph neural combinatorial solvers) are promising but introduce additional reproducibility and generalization challenges \citep{cappart2023}.
 
 \paragraph{Inference policy.}
-We intentionally adopt a conservative claim regime. In particular, $N=80$ is treated as scalability-only and we exclude bounds/gaps by policy to avoid overclaiming from limited evidence.
+We adopt a conservative claim regime to avoid overstatement. In particular, $N=80$ is treated as scalability-only and we exclude bounds/gaps by policy to keep inference aligned with the available evidence.

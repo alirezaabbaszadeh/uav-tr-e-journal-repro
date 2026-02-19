@@ -1,40 +1,44 @@
 \label{sec:risk_model}
 
-We model communication risk as the probability of an outage event along each flight segment. The intent is not to propose a new physical-layer model, but to provide an operationally interpretable risk signal that can be integrated into route planning.
+We model communication risk as the probability of an outage event along each flight segment. The purpose is operational: to produce an interpretable risk signal that can be traded off against energy and time-window compliance in routing decisions. We adopt a standard urban air-to-ground abstraction rather than introducing a new physical-layer model \citep{alhourani2014,zeng2016,mozaffari2016}.
 
-\subsection{Air-to-ground link model}
-Following standard urban air-to-ground modeling, we represent the probability of line-of-sight (LoS) as a logistic function of the elevation angle $\theta$ \citep{alhourani2014}:
+\subsection{Air-to-ground link abstraction}
+Following common urban UAV channel modeling, we represent the probability of line-of-sight (LoS) as a logistic function of the elevation angle $\theta$ \citep{alhourani2014}:
 \begin{equation}
   P_{\text{LoS}}(\theta) = \frac{1}{1 + a\exp\{-b(\theta-a)\}},
 \end{equation}
-where $(a,b)$ are environment-dependent parameters. For a candidate base station located at planar coordinate $\mathbf{s}$ and a UAV sample point at planar coordinate $\mathbf{p}$ and altitude $h$, the 3D distance is $d=\sqrt{\lVert\mathbf{s}-\mathbf{p}\rVert^2 + h^2}$ and $\theta=\arctan(h/\lVert\mathbf{s}-\mathbf{p}\rVert)$.
+where $(a,b)$ are environment-dependent parameters.
 
-We compute pathloss as a free-space component plus excess loss terms for LoS and NLoS links:
+For a candidate base station at planar coordinate $\mathbf{s}$ and a UAV sample point at planar coordinate $\mathbf{p}$ with altitude $h$, the 3D distance is $d=\sqrt{\lVert\mathbf{s}-\mathbf{p}\rVert^2 + h^2}$ and $\theta=\arctan\big(h/\lVert\mathbf{s}-\mathbf{p}\rVert\big)$. We compute pathloss as a free-space component plus excess loss terms for LoS and NLoS links:
 \begin{equation}
   \mathrm{PL}(d,\theta) = \mathrm{FSPL}(d) + P_{\text{LoS}}(\theta)\,\eta_{\text{LoS}} + (1-P_{\text{LoS}}(\theta))\,\eta_{\text{NLoS}},
 \end{equation}
 where $\eta_{\text{LoS}}$ and $\eta_{\text{NLoS}}$ are excess losses (dB) \citep{alhourani2014,zeng2016}.
 
-Given transmit power $P_T$ (dBm) and noise power $P_N$ (dBm), the SNR at that base station is
+Given transmit power $P_T$ (dBm) and noise power $P_N$ (dBm), the received SNR is
 \begin{equation}
   \mathrm{SNR} = P_T - \mathrm{PL}(d,\theta) - P_N.
 \end{equation}
 
 \subsection{Arc outage risk}
-For each arc $(i,j)$ we sample $K$ points along the straight-line segment connecting $i$ and $j$. At each sample point, the UAV is assumed to associate with the base station that yields the maximum SNR. Let $\mathrm{SNR}^*(\mathbf{p}) = \max_{b\in\mathcal{B}} \mathrm{SNR}_b(\mathbf{p})$. We define an outage indicator
+For each arc $(i,j)$ we sample $K$ points along the straight-line segment connecting $i$ and $j$. At each sample point $\mathbf{p}$, the UAV associates with the base station that yields the maximum SNR, denoted
+\begin{equation}
+  \mathrm{SNR}^*(\mathbf{p}) = \max_{b\in\mathcal{B}} \mathrm{SNR}_b(\mathbf{p}).
+\end{equation}
+We define an outage indicator
 \begin{equation}
   \mathbb{I}_{\text{out}}(\mathbf{p}) = \begin{cases}
     1, & \mathrm{SNR}^*(\mathbf{p}) < \mathrm{SNR}_{\min},\\
     0, & \text{otherwise},
   \end{cases}
 \end{equation}
-where $\mathrm{SNR}_{\min}$ is an SNR threshold.
+where $\mathrm{SNR}_{\min}$ is a threshold.
 
 The arc risk is estimated as the mean outage rate over samples:
 \begin{equation}
-  R_{ij} = \frac{1}{K}\sum_{k=1}^K \mathbb{I}_{\text{out}}(\mathbf{p}_k).
+  R_{ij} = \frac{1}{K}\sum_{k=1}^K \mathbb{I}_{\text{out}}(\mathbf{p}_k),
 \end{equation}
-This yields $R_{ij}\in[0,1]$ as an operationally interpretable reliability score. Increasing $K$ reduces Monte Carlo noise but increases preprocessing time; we explicitly analyze $K$ sensitivity in the robustness campaign.
+yielding $R_{ij}\in[0,1]$ as an operationally interpretable reliability score. Increasing $K$ reduces Monte Carlo noise but increases preprocessing time; we explicitly analyze $K$ sensitivity in the robustness campaign.
 
-\subsection{Interpretation}
-Risk depends strongly on base-station density $B$ and geometry. In dense urban deployments, additional base stations can sharply reduce outage risk, while in sparse settings certain arcs become high-risk corridors. This behavior is captured in our managerial sensitivity analysis (Table~\ref{tab:managerial_support} and Figure~\ref{fig:bs_delta_effect}).
+\subsection{Interpretation and sensitivity}
+Risk depends strongly on base-station density $B$ and geometry. In sparse deployments, certain arcs become high-risk corridors, while densification can sharply reduce outage probability. This behavior is reflected in our managerial sensitivity analysis (Table~\ref{tab:managerial_support} and Figure~\ref{fig:bs_delta_effect}).

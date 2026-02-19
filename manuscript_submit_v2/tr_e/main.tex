@@ -3,6 +3,7 @@
 \documentclass[review,12pt,authoryear]{elsarticle}
 
 \usepackage{amsmath,amssymb}
+\usepackage{microtype}
 \usepackage{booktabs}
 \usepackage{graphicx}
 \usepackage{subcaption}
@@ -84,47 +85,6 @@ UAV logistics \sep VRPTW \sep pickup and delivery \sep communication outage risk
 
 \section*{Data and Code Availability}
 \input{sections/reproducibility.tex}
-
-\appendix
-\section{Generated Tables}
-\input{generated/tables/tab_kpi_A.tex}
-\input{generated/tables/tab_kpi_B.tex}
-\input{generated/tables/tab_gap_A.tex}
-\input{generated/tables/tab_gap_B.tex}
-\input{generated/tables/tab_feas_A.tex}
-\input{generated/tables/tab_feas_B.tex}
-\input{generated/tables/tab_scalability_summary.tex}
-\input{generated/tables/tab_managerial_support.tex}
-\input{generated/tables/tab_risk_signal.tex}
-
-\section{Generated Figures}
-\begin{figure}[t]
-\centering
-\includegraphics[width=0.85\linewidth]{generated/figures/fig_scenario_overview.pdf}
-\caption{Example audited scenario (depot, clients, base stations) and one OR-Tools route.}
-\label{fig:scenario_overview}
-\end{figure}
-
-\begin{figure}[t]
-\centering
-\includegraphics[width=0.92\linewidth]{generated/figures/fig_bs_delta_effect.pdf}
-\caption{Base-station density and time-window tightness jointly shape arc outage risk.}
-\label{fig:bs_delta_effect}
-\end{figure}
-
-\begin{figure}[t]
-\centering
-\includegraphics[width=0.92\linewidth]{generated/figures/fig_tradeoff_lambda_tw.pdf}
-\caption{Soft time-window penalty weight induces an energy--service tradeoff.}
-\label{fig:lambda_tw_tradeoff}
-\end{figure}
-
-\begin{figure}[t]
-\centering
-\includegraphics[width=0.92\linewidth]{generated/figures/fig_scalability_summary.pdf}
-\caption{Scalability-only characterization at $N=80$ (no bounds/gaps by policy).}
-\label{fig:scalability_summary}
-\end{figure}
 
 \bibliographystyle{elsarticle-harv}
 \bibliography{references}

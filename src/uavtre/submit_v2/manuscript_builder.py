@@ -7,6 +7,13 @@ from pathlib import Path
 
 import pandas as pd
 
+_METHOD_LABELS: dict[str, str] = {
+    "highs_exact_bound": "HiGHS (MIP)",
+    "ortools_main": "OR-Tools (soft TW)",
+    "pyvrp_baseline": "PyVRP (hard TW)",
+}
+
+
 
 def _load_csv(path: Path) -> pd.DataFrame:
     if not path.exists():
@@ -29,13 +36,13 @@ def _latex_escape(text: str) -> str:
 
 def _fmt(x: float | int | None, nd: int) -> str:
     if x is None:
-        return "NA"
+        return "--"
     try:
         v = float(x)
     except Exception:
-        return "NA"
+        return "--"
     if not math.isfinite(v):
-        return "NA"
+        return "--"
     return f"{v:.{nd}f}"
 
 
@@ -57,6 +64,7 @@ def _write_table(
     rows: list[list[str]],
     notes: str | None = None,
     col_align: str | None = None,
+    fit_width: bool = False,
 ) -> Path:
     out_path.parent.mkdir(parents=True, exist_ok=True)
 
@@ -68,6 +76,10 @@ def _write_table(
     lines.append("\\centering")
     lines.append(f"\\caption{{{_latex_escape(caption)}}}")
     lines.append(f"\\label{{{label}}}")
+    lines.append("{\\small")
+    lines.append("\\setlength{\\tabcolsep}{4pt}")
+    if fit_width:
+        lines.append("\\resizebox{\\linewidth}{!}{%")
     lines.append(f"\\begin{{tabular}}{{{col_align}}}")
     lines.append("\\toprule")
     lines.append(" & ".join(_latex_escape(c) for c in columns) + r" \\")
@@ -76,11 +88,14 @@ def _write_table(
         lines.append(" & ".join(_latex_escape(str(c)) for c in r) + r" \\")
     lines.append("\\bottomrule")
     lines.append("\\end{tabular}")
+    if fit_width:
+        lines.append("}")
     if notes:
         lines.append("\\vspace{0.25em}")
         lines.append("\\begin{minipage}{0.95\\linewidth}\\footnotesize")
         lines.append(_latex_escape(notes))
         lines.append("\\end{minipage}")
+    lines.append("}")
     lines.append("\\end{table}")
 
     out_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
@@ -88,6 +103,8 @@ def _write_table(
 
 
 def _prepare_kpi_table(df: pd.DataFrame) -> list[list[str]]:
+    """Service KPI table rows (on-time and total tardiness)."""
+
     df = df.copy()
 
     # Keep a stable method order.
@@ -98,6 +115,30 @@ def _prepare_kpi_table(df: pd.DataFrame) -> list[list[str]]:
 
     on_time = _mean_std(df, "on_time_pct_mean", "on_time_pct_std", 1, 1)
     tard = _mean_std(df, "total_tardiness_min_mean", "total_tardiness_min_std", 1, 1)
+
+    rows: list[list[str]] = []
+    for i, row in df.reset_index(drop=True).iterrows():
+        rows.append(
+            [
+                _METHOD_LABELS.get(str(row["method"]), str(row["method"])),
+                str(int(round(float(row["N"])))) if pd.notna(row.get("N")) else "--",
+                on_time[i],
+                tard[i],
+            ]
+        )
+    return rows
+
+
+def _prepare_cost_table(df: pd.DataFrame) -> list[list[str]]:
+    """Cost proxy table rows (energy, risk, runtime)."""
+
+    df = df.copy()
+
+    method_order = ["highs_exact_bound", "ortools_main", "pyvrp_baseline"]
+    df["method"] = df["method"].astype(str)
+    df["method_rank"] = df["method"].apply(lambda m: method_order.index(m) if m in method_order else 99)
+    df = df.sort_values(["N", "method_rank", "method"], ascending=[True, True, True])
+
     energy = _mean_std(df, "total_energy_mean", "total_energy_std", 0, 0)
     risk = _mean_std(df, "risk_mean_mean", "risk_mean_std", 3, 3)
     runtime = _mean_std(df, "runtime_total_s_mean", "runtime_total_s_std", 2, 2)
@@ -106,10 +147,8 @@ def _prepare_kpi_table(df: pd.DataFrame) -> list[list[str]]:
     for i, row in df.reset_index(drop=True).iterrows():
         rows.append(
             [
-                str(row["method"]),
-                str(int(round(float(row["N"])))) if pd.notna(row.get("N")) else "NA",
-                on_time[i],
-                tard[i],
+                _METHOD_LABELS.get(str(row["method"]), str(row["method"])),
+                str(int(round(float(row["N"])))) if pd.notna(row.get("N")) else "--",
                 energy[i],
                 risk[i],
                 runtime[i],
@@ -131,7 +170,7 @@ def _prepare_gap_table(df: pd.DataFrame) -> list[list[str]]:
         N = str(int(round(float(r["N"])))) if pd.notna(r.get("N")) else "NA"
         rows.append(
             [
-                str(r["method"]),
+                _METHOD_LABELS.get(str(r["method"]), str(r["method"])),
                 N,
                 _fmt(r.get("gap_pct_mean"), 1),
                 _fmt(r.get("best_bound_mean"), 0),
@@ -153,7 +192,7 @@ def _prepare_feas_table(df: pd.DataFrame) -> list[list[str]]:
     for _, r in df.iterrows():
         rows.append(
             [
-                str(r["method"]),
+                _METHOD_LABELS.get(str(r["method"]), str(r["method"])),
                 str(int(round(float(r["N"])))) if pd.notna(r.get("N")) else "NA",
                 _fmt(r.get("feasible_rate"), 3),
             ]
@@ -240,7 +279,7 @@ def _write_fig_scenario_overview(*, campaign_dir: Path, out_path: Path) -> Path:
                     xs.append(float(clients[idx][0]))
                     ys.append(float(clients[idx][1]))
         if len(xs) >= 2:
-            ax.plot(xs, ys, lw=1.6, c="#9467bd", alpha=0.9, label="Example route")
+            ax.plot(xs, ys, lw=1.8, c="#111111", alpha=0.9, label="Example route")
 
     ax.set_title("Example audited scenario and one OR-Tools route")
     ax.set_xlabel("x")
@@ -273,7 +312,7 @@ def _write_fig_bs_delta_effect(*, campaign_dir: Path, out_path: Path) -> Path:
         for delta in deltas:
             dd = d[d["Delta_min"] == delta].sort_values("B")
             ax.plot(dd["B"], dd["risk_mean"], marker="o", lw=1.6, label=f"$\\Delta={delta}$")
-        ax.set_title(method)
+        ax.set_title(_METHOD_LABELS.get(method, method))
         ax.set_xlabel("Number of base stations B")
         ax.grid(True, alpha=0.25)
 
@@ -357,12 +396,12 @@ def _write_fig_scalability_summary(*, campaign_dir: Path, out_path: Path) -> Pat
 
     for j, fam in enumerate(["A", "B"]):
         d = df[df["tw_family"] == fam].copy().sort_values("method")
-        axes[0, j].bar(d["method"], d["feasible_rate"], color="#1f77b4")
+        axes[0, j].bar([_METHOD_LABELS.get(str(m), str(m)) for m in d["method"].tolist()], d["feasible_rate"], color="#1f77b4")
         axes[0, j].set_title(f"Family {fam}: Feasibility")
         axes[0, j].set_ylim(0, 1.05)
         axes[0, j].grid(True, axis="y", alpha=0.25)
 
-        axes[1, j].bar(d["method"], d["runtime_total_s_mean"], color="#ff7f0e")
+        axes[1, j].bar([_METHOD_LABELS.get(str(m), str(m)) for m in d["method"].tolist()], d["runtime_total_s_mean"], color="#ff7f0e")
         axes[1, j].set_title(f"Family {fam}: Runtime")
         axes[1, j].grid(True, axis="y", alpha=0.25)
 
@@ -400,37 +439,67 @@ def generate_assets(*, campaign_dir: Path, manuscript_root: Path) -> list[Path]:
     written.append(
         _write_table(
             out_path=tables_dir / "tab_kpi_A.tex",
-            caption="Main KPIs (Family A): mean (std) across audited instances.",
+            caption="Service KPIs (Family A): mean (std) across audited instances.",
             label="tab:kpi_A",
             columns=[
                 "Method",
                 "N",
                 "On-time (%)",
                 "Tardiness (min)",
+            ],
+            rows=_prepare_kpi_table(kpi_a),
+            notes="On-time and tardiness are evaluated on returned routes.",
+            col_align="p{3.0cm}rrr",
+        )
+    )
+    written.append(
+        _write_table(
+            out_path=tables_dir / "tab_cost_A.tex",
+            caption="Cost proxies (Family A): mean (std) across audited instances.",
+            label="tab:cost_A",
+            columns=[
+                "Method",
+                "N",
                 "Energy",
                 "Risk",
                 "Runtime (s)",
             ],
-            rows=_prepare_kpi_table(kpi_a),
-            notes="On-time and tardiness are evaluated on returned routes; risk is arc-level outage risk averaged over arcs.",
+            rows=_prepare_cost_table(kpi_a),
+            notes="Energy is a distance-based proxy; risk is mean arc outage risk averaged over arcs.",
+            col_align="p{3.0cm}rrrr",
         )
     )
     written.append(
         _write_table(
             out_path=tables_dir / "tab_kpi_B.tex",
-            caption="Main KPIs (Family B stress): mean (std) across audited instances.",
+            caption="Service KPIs (Family B stress): mean (std) across audited instances.",
             label="tab:kpi_B",
             columns=[
                 "Method",
                 "N",
                 "On-time (%)",
                 "Tardiness (min)",
+            ],
+            rows=_prepare_kpi_table(kpi_b),
+            notes="Family B tightens/shifts time windows to stress service reliability.",
+            col_align="p{3.0cm}rrr",
+        )
+    )
+    written.append(
+        _write_table(
+            out_path=tables_dir / "tab_cost_B.tex",
+            caption="Cost proxies (Family B stress): mean (std) across audited instances.",
+            label="tab:cost_B",
+            columns=[
+                "Method",
+                "N",
                 "Energy",
                 "Risk",
                 "Runtime (s)",
             ],
-            rows=_prepare_kpi_table(kpi_b),
-            notes="Family B tightens/shifts time windows to stress service reliability.",
+            rows=_prepare_cost_table(kpi_b),
+            notes="Energy is a distance-based proxy; risk is mean arc outage risk averaged over arcs.",
+            col_align="p{3.0cm}rrrr",
         )
     )
 
@@ -488,7 +557,7 @@ def generate_assets(*, campaign_dir: Path, manuscript_root: Path) -> list[Path]:
             rows.append(
                 [
                     str(r["tw_family"]),
-                    str(r["method"]),
+                    _METHOD_LABELS.get(str(r["method"]), str(r["method"])),
                     _fmt(r.get("feasible_rate"), 3),
                     _fmt(r.get("runtime_total_s_mean"), 2),
                     _fmt(r.get("on_time_pct_mean"), 1),
@@ -512,6 +581,8 @@ def generate_assets(*, campaign_dir: Path, manuscript_root: Path) -> list[Path]:
                 ],
                 rows=rows,
                 notes="Per policy, N=80 does not report bounds/gaps and is used only for scalability characterization.",
+                col_align="lp{2.7cm}rrrrr",
+                fit_width=True,
             )
         )
 
@@ -521,7 +592,7 @@ def generate_assets(*, campaign_dir: Path, manuscript_root: Path) -> list[Path]:
     for _, r in managerial.sort_values(["method", "B", "Delta_min"]).iterrows():
         mgr_rows.append(
             [
-                str(r["method"]),
+                _METHOD_LABELS.get(str(r["method"]), str(r["method"])),
                 str(int(r["B"])),
                 str(int(r["Delta_min"])),
                 _fmt(r.get("on_time_pct"), 1),
@@ -543,7 +614,7 @@ def generate_assets(*, campaign_dir: Path, manuscript_root: Path) -> list[Path]:
     risk_signal = _load_csv(campaign_dir / "paper_combined" / "table_risk_signal_check.csv")
     rs_rows = []
     for _, r in risk_signal.sort_values(["method"]).iterrows():
-        rs_rows.append([str(r["method"]), _fmt(r.get("risk_mean_avg"), 3)])
+        rs_rows.append([_METHOD_LABELS.get(str(r["method"]), str(r["method"])), _fmt(r.get("risk_mean_avg"), 3)])
     written.append(
         _write_table(
             out_path=tables_dir / "tab_risk_signal.tex",

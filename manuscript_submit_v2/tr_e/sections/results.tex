@@ -1,25 +1,47 @@
 \label{sec:results}
 
-This section summarizes the audited campaign results. Tables~\ref{tab:kpi_A}--\ref{tab:feas_B} report the main-table regime ($N\in\{10,20,40\}$) separately for the baseline and stress time-window families. Table~\ref{tab:scalability_summary} reports the scalability-only regime ($N=80$) without any bound or gap claims.
+This section summarizes results from the locked, audited campaign. We report the main-table regime ($N\in\{10,20,40\}$) separately for baseline (Family A) and stressed (Family B) time windows, and we report a scalability-only characterization at $N=80$ without any bound/gap claims.
 
-\subsection{Service KPIs under baseline vs stress time windows}
-Family B is designed to stress time-window compliance. The impact is visible in OR-Tools service KPIs at medium size: at $N=20$, the mean on-time rate decreases from 46.3\% (Family A) to 36.3\% (Family B)\evid{C2_A_N20_on_time}\evid{C2_B_N20_on_time}, while mean total tardiness increases from 77.3 to 94.6 minutes\evid{C2_A_N20_tardiness}\evid{C2_B_N20_tardiness}. This aligns with the role of soft time windows: the solver may accept lateness to reduce energy and/or risk penalties.
+\subsection{Main KPIs under baseline and stressed time windows}
+Tables~\ref{tab:kpi_A} and \ref{tab:kpi_B} report service KPIs (on-time and tardiness), while Tables~\ref{tab:cost_A} and \ref{tab:cost_B} report cost proxies (energy, risk, and runtime). Family B is designed to stress time-window compliance, and the impact is visible in service KPIs. At $N=20$, the OR-Tools on-time rate decreases from 46.3\% (Family A) to 36.3\% (Family B)\evid{C2_A_N20_on_time}\evid{C2_B_N20_on_time}, while mean total tardiness increases from 77.3 to 94.6 minutes\evid{C2_A_N20_tardiness}\evid{C2_B_N20_tardiness}.
 
-PyVRP exhibits near-perfect on-time and near-zero tardiness when it finds a feasible solution (Tables~\ref{tab:kpi_A}--\ref{tab:kpi_B}), which is expected under hard time-window enforcement. However, this service-level behavior is coupled with feasibility risk at larger sizes.
+\input{generated/tables/tab_kpi_A.tex}
+\input{generated/tables/tab_kpi_B.tex}
+\input{generated/tables/tab_cost_A.tex}
+\input{generated/tables/tab_cost_B.tex}
+
+PyVRP (hard TW) exhibits near-perfect on-time and near-zero tardiness \emph{conditional on feasibility} (Tables~\ref{tab:kpi_A}--\ref{tab:kpi_B}), which is expected under strict latest-start enforcement. This highlights a key interpretational point for practitioners and reviewers: hard time windows can make service KPIs look excellent on feasible subsets while masking brittleness at scale.
 
 \subsection{Feasibility at scale: soft vs hard time-window policies}
-A key operational distinction is feasibility under stress. OR-Tools maintains high feasibility at $N=40$ in both families (feasible rate 0.972 in Family A and 0.969 in Family B)\evid{C3_A_N40_feasible_rate_a_n40_ortools}\evid{C3_B_N40_feasible_rate_b_n40_ortools}. In contrast, the hard-TW baseline fails to return feasible solutions at $N=40$ (feasible rate 0)\evid{C3_A_N40_feasible_rate_a_n40_pyvrp}\evid{C3_B_N40_feasible_rate_b_n40_pyvrp}. This illustrates an important managerial tradeoff: hard feasibility constraints can produce attractive service metrics when feasible, but may be brittle under larger instance sizes or stressed time windows.
+Feasibility is an operational requirement, not merely a solver output. Tables~\ref{tab:feas_A} and \ref{tab:feas_B} report feasibility rates by method and size. OR-Tools maintains high feasibility at $N=40$ in both families (0.972 in Family A and 0.969 in Family B)\evid{C3_A_N40_feasible_rate_a_n40_ortools}\evid{C3_B_N40_feasible_rate_b_n40_ortools}. In contrast, the hard-TW baseline returns no feasible solutions at $N=40$ (feasible rate 0)\evid{C3_A_N40_feasible_rate_a_n40_pyvrp}\evid{C3_B_N40_feasible_rate_b_n40_pyvrp}.
+
+\input{generated/tables/tab_feas_A.tex}
+\input{generated/tables/tab_feas_B.tex}
 
 \subsection{Bound-gap evidence for $N\in\{20,40\}$}
-In the bound-gap regime, we compute gaps only when a finite incumbent objective and a compatible finite bound are both available. At $N=20$, OR-Tools yields a tighter mean gap than PyVRP in both families: 11.1\% vs 25.6\% (Family A) and 11.4\% vs 27.8\% (Family B)\evid{C4_A_N20_gap_pct_a_n20_ortools}\evid{C4_A_N20_gap_pct_a_n20_pyvrp}\evid{C4_B_N20_gap_pct_b_n20_ortools}\evid{C4_B_N20_gap_pct_b_n20_pyvrp}. Gaps at $N=40$ are reported where applicable but should be interpreted cautiously due to method-dependent feasibility and the conservative claim regime.
+In the bound-gap regime, we compute gaps only when a finite incumbent objective and a compatible finite bound are both available. Tables~\ref{tab:gap_A} and \ref{tab:gap_B} summarize mean gaps and bound/incumbent values. At $N=20$, OR-Tools yields a tighter mean gap than PyVRP in both families: 11.1\% vs 25.6\% (Family A) and 11.4\% vs 27.8\% (Family B)\evid{C4_A_N20_gap_pct_a_n20_ortools}\evid{C4_A_N20_gap_pct_a_n20_pyvrp}\evid{C4_B_N20_gap_pct_b_n20_ortools}\evid{C4_B_N20_gap_pct_b_n20_pyvrp}. Gaps at $N=40$ should be interpreted cautiously due to method-dependent feasibility and the conservative claim regime.
+
+\input{generated/tables/tab_gap_A.tex}
+\input{generated/tables/tab_gap_B.tex}
 
 \subsection{Scalability-only characterization at $N=80$}
-For $N=80$, we report runtime, feasibility, and KPI summaries only (Table~\ref{tab:scalability_summary}). Per policy, no bound/gap values are computed or claimed at this size. The audit gate confirms that the number of invalid bound/gap rows at $N=80$ is zero\evid{SCAL_n80_invalid_bound_gap_rows}.
+For $N=80$, we report runtime, feasibility, and KPI summaries only (Table~\ref{tab:scalability_summary} and Figure~\ref{fig:scalability_summary}). Per policy, no bound or gap values are computed or claimed at this size. The audit gate confirms that the number of invalid bound/gap rows at $N=80$ is zero\evid{SCAL_n80_invalid_bound_gap_rows}.
 
-\subsection{Sensitivity and risk signal}
-Communication risk responds strongly to base-station density and time-window tightness. Table~\ref{tab:managerial_support} and Figure~\ref{fig:bs_delta_effect} show that increasing $B$ reduces mean outage risk and can improve service outcomes. The risk signal is nontrivial across solvers (Table~\ref{tab:risk_signal}), indicating that different route choices can expose materially different communication reliability profiles.
+\input{generated/tables/tab_scalability_summary.tex}
 
-Soft time-window weight also induces an energy--service tradeoff (Figure~\ref{fig:lambda_tw_tradeoff}). This supports the interpretation that penalty calibration is managerial: increasing time-window penalty shifts solutions toward better service compliance at the expense of energy and potentially risk.
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.92\linewidth]{generated/figures/fig_scalability_summary.pdf}
+\caption{Scalability-only characterization at $N=80$ (no bounds/gaps by policy).}
+\label{fig:scalability_summary}
+\end{figure}
+
+\subsection{Risk signal sanity and sensitivity}
+Communication risk responds strongly to base-station density and time-window tightness (Section~\ref{sec:risk_model}). As a basic sanity check, Table~\ref{tab:risk_signal} shows that the mean risk signal is nontrivial and method-dependent, indicating that different routing policies expose different reliability profiles.
+
+\input{generated/tables/tab_risk_signal.tex}
+
+We further analyze base-station density and penalty calibration in Section~\ref{sec:insights}, where we connect risk shifts to service outcomes and discuss practical levers for operators.
 
 \subsection{Statistical reporting (conservative)}
 We report adjusted p-values, effect sizes, and bootstrap confidence intervals for paired comparisons. As an example, for runtime (OR-Tools vs PyVRP) the Holm-adjusted p-values are near the 0.05 threshold in both families\evid{C5_A_runtime_p_holm_a}\evid{C5_B_runtime_p_holm_b}, motivating conservative language when interpreting runtime differences.
