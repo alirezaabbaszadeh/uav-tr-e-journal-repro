@@ -105,8 +105,18 @@ def _table_metric_ref(path: Path, filters: dict[str, Any], metric_col: str) -> s
     return f"`{path.as_posix()}` [{', '.join(parts)}], metric=`{metric_col}`"
 
 
+def _relpath_text(path: Path) -> str:
+    try:
+        return path.relative_to(ROOT).as_posix()
+    except ValueError:
+        return path.as_posix()
+
+
 def main() -> None:
     args = parse_args()
+
+    campaign_root_arg = args.campaign_root
+    submission_dir_arg = args.submission_dir
 
     campaign_root = Path(args.campaign_root)
     if not campaign_root.is_absolute():
@@ -130,7 +140,7 @@ def main() -> None:
     audit = (
         json.loads(audit_path.read_text(encoding="utf-8"))
         if audit_path.exists()
-        else {"summary": {"overall_pass": False, "reason": f"missing audit: {audit_path}"}}
+        else {"summary": {"overall_pass": False, "reason": f"missing audit: {_relpath_text(audit_path)}"}}
     )
 
     main_a = _load_csv(campaign_dir / "main_A_core" / "results_main.csv")
@@ -177,13 +187,13 @@ def main() -> None:
     )
     cmd_audit = (
         "PYTHONPATH=src .venv/bin/python scripts/audit_journal_readiness.py "
-        f"--campaign-id {args.campaign_id} --campaign-root {campaign_root.as_posix()} "
+        f"--campaign-id {args.campaign_id} --campaign-root {campaign_root_arg} "
         f"--json-out outputs/audit/journal_readiness_{args.campaign_id}.json "
         "--fail-on-critical --fail-on-high"
     )
     cmd_build_pack = (
         f"./scripts/build_manuscript_pack.sh --campaign-id {args.campaign_id} "
-        f"--campaign-root {campaign_root.as_posix()}"
+        f"--campaign-root {campaign_root_arg}"
     )
 
     claim_map = f"""# Claim-to-Evidence Map ({args.campaign_id})
@@ -314,7 +324,7 @@ PYTHONPATH=src ./scripts/run_journal_v3_robust.sh
 ```bash
 PYTHONPATH=src .venv/bin/python scripts/audit_journal_readiness.py \\
   --campaign-id {args.campaign_id} \\
-  --campaign-root {campaign_root.as_posix()} \\
+  --campaign-root {campaign_root_arg} \\
   --json-out outputs/audit/journal_readiness_{args.campaign_id}.json \\
   --fail-on-critical --fail-on-high
 ```
@@ -323,8 +333,8 @@ PYTHONPATH=src .venv/bin/python scripts/audit_journal_readiness.py \\
 ```bash
 ./scripts/build_manuscript_pack.sh \\
   --campaign-id {args.campaign_id} \\
-  --campaign-root {campaign_root.as_posix()} \\
-  --submission-dir {out_dir.as_posix()}
+  --campaign-root {campaign_root_arg} \\
+  --submission-dir {submission_dir_arg}
 ```
 
 ## 5) Command provenance
@@ -370,14 +380,14 @@ Corresponding Author
     manifest = {
         "generated_at_utc": generated_at,
         "campaign_id": args.campaign_id,
-        "campaign_root": campaign_root.as_posix(),
-        "campaign_dir": campaign_dir.as_posix(),
-        "audit_json": audit_path.as_posix(),
+        "campaign_root": campaign_root_arg,
+        "campaign_dir": f"{campaign_root_arg.rstrip('/')}/{args.campaign_id}",
+        "audit_json": _relpath_text(audit_path),
         "audit_summary": audit.get("summary", {}),
         "runtime_strategy": {
             "execution": "cpu_sharded",
             "num_shards": 12,
-            "source": f"{campaign_dir.as_posix()}/RUN_PLAN.json",
+            "source": _relpath_text(campaign_dir / "RUN_PLAN.json"),
         },
         "source_tables": {
             "paper_A": sorted(str(p.relative_to(ROOT)) for p in (campaign_dir / "paper_A").glob("*.csv")),
@@ -412,6 +422,15 @@ Corresponding Author
             )
 
     manifest_path = out_dir / f"MANUSCRIPT_PACK_MANIFEST_{args.campaign_id}.json"
+    _write(manifest_path, json.dumps(manifest, indent=2))
+
+    manifest["artifacts"].append(
+        {
+            "path": manifest_path.relative_to(ROOT).as_posix(),
+            "sha256": _sha256(manifest_path),
+            "bytes": manifest_path.stat().st_size,
+        }
+    )
     _write(manifest_path, json.dumps(manifest, indent=2))
 
     print("written:")

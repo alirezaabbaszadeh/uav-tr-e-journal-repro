@@ -1,9 +1,9 @@
 {
-  "generated_at_utc": "2026-02-19T04:38:33.139652+00:00",
+  "generated_at_utc": "2026-02-19T04:43:55.961334+00:00",
   "campaign_id": "journal_v3_full_20260219_000231",
-  "campaign_root": "/home/ali/code/UAV/uav_tr_e_project/outputs/campaigns",
-  "campaign_dir": "/home/ali/code/UAV/uav_tr_e_project/outputs/campaigns/journal_v3_full_20260219_000231",
-  "audit_json": "/home/ali/code/UAV/uav_tr_e_project/outputs/audit/journal_readiness_journal_v3_full_20260219_000231.json",
+  "campaign_root": "outputs/campaigns",
+  "campaign_dir": "outputs/campaigns/journal_v3_full_20260219_000231",
+  "audit_json": "outputs/audit/journal_readiness_journal_v3_full_20260219_000231.json",
   "audit_summary": {
     "total_gates": 25,
     "critical_failed": 0,
@@ -14,7 +14,7 @@
   "runtime_strategy": {
     "execution": "cpu_sharded",
     "num_shards": 12,
-    "source": "/home/ali/code/UAV/uav_tr_e_project/outputs/campaigns/journal_v3_full_20260219_000231/RUN_PLAN.json"
+    "source": "outputs/campaigns/journal_v3_full_20260219_000231/RUN_PLAN.json"
   },
   "source_tables": {
     "paper_A": [
@@ -57,8 +57,8 @@
   "artifacts": [
     {
       "path": "output/submission/claim_evidence_map_journal_v3_full_20260219_000231.md",
-      "sha256": "069d38b0d2f08b8254fead5618ce6de868fa6ad837e1524dde184ebe3c682a21",
-      "bytes": 4475
+      "sha256": "907ad2d5e3c0ef7f4d2a683c7d62966e135420f807b63284c8bc7ac719f5040a",
+      "bytes": 4367
     },
     {
       "path": "output/submission/results_discussion_draft_journal_v3_full_20260219_000231.md",
@@ -92,8 +92,13 @@
     },
     {
       "path": "output/submission/build_instructions.md",
-      "sha256": "0b807e08c063f6895c766160da45bad9b51f078846ee7516856ae8b2b281a0a9",
-      "bytes": 1436
+      "sha256": "156f3e6660767d1100e498bdc4d5a3376d54a0f8a0a0f842cb38c7bd271abdee",
+      "bytes": 1328
+    },
+    {
+      "path": "output/submission/MANUSCRIPT_PACK_MANIFEST_journal_v3_full_20260219_000231.json",
+      "sha256": "1e3b9b3d0992a88042bfb6385a64f7b8e435a8badb2c941d4f3f70e13d3d0dbf",
+      "bytes": 4306
     }
   ]
 }

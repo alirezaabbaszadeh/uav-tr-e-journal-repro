@@ -42,6 +42,13 @@ def _resolve_rooted(path_like: str | Path) -> Path:
     return ROOT / path
 
 
+def _display_path(path: Path) -> str:
+    try:
+        return path.relative_to(ROOT).as_posix()
+    except ValueError:
+        return path.as_posix()
+
+
 def _copy_file(src: Path, dst: Path) -> None:
     dst.parent.mkdir(parents=True, exist_ok=True)
     if src.exists():
@@ -170,7 +177,7 @@ def _copy_campaign_artifacts(
     manifest = {
         "generated_at_utc": datetime.now(timezone.utc).isoformat(),
         "campaign_id": campaign_id,
-        "campaign_source": str(campaign_dir),
+        "campaign_source": _display_path(campaign_dir),
         "campaign_source_files": {
             "CAMPAIGN_MANIFEST.json": source_manifest.exists(),
             "RUN_PLAN.json": source_run_plan.exists(),

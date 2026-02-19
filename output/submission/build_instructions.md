@@ -19,7 +19,7 @@ PYTHONPATH=src ./scripts/run_journal_v3_robust.sh
 ```bash
 PYTHONPATH=src .venv/bin/python scripts/audit_journal_readiness.py \
   --campaign-id journal_v3_full_20260219_000231 \
-  --campaign-root /home/ali/code/UAV/uav_tr_e_project/outputs/campaigns \
+  --campaign-root outputs/campaigns \
   --json-out outputs/audit/journal_readiness_journal_v3_full_20260219_000231.json \
   --fail-on-critical --fail-on-high
 ```
@@ -28,8 +28,8 @@ PYTHONPATH=src .venv/bin/python scripts/audit_journal_readiness.py \
 ```bash
 ./scripts/build_manuscript_pack.sh \
   --campaign-id journal_v3_full_20260219_000231 \
-  --campaign-root /home/ali/code/UAV/uav_tr_e_project/outputs/campaigns \
-  --submission-dir /home/ali/code/UAV/uav_tr_e_project/output/submission
+  --campaign-root outputs/campaigns \
+  --submission-dir output/submission
 ```
 
 ## 5) Command provenance
