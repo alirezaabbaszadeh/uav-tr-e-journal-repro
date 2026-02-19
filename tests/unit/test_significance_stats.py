@@ -33,6 +33,13 @@ def test_significance_outputs_adjusted_pvalues_and_effect_size() -> None:
     out = compute_significance_results(df)
     assert out
     first = out[0]
+
+    if first.comparison_id == "scipy_missing":
+        assert first.test_name == "wilcoxon_signed_rank"
+        assert first.method_a == "NA"
+        assert first.method_b == "NA"
+        return
+
     assert first.p_value is not None
     assert first.p_value_adj is not None
     assert first.effect_size is not None

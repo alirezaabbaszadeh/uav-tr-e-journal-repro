@@ -5,11 +5,16 @@ MAIN_PATH="${MAIN_PATH:-outputs/main_table_v2/results_main.csv}"
 SCAL_PATH="${SCAL_PATH:-outputs/scalability_v2/results_main.csv}"
 OUT_DIR="${OUT_DIR:-outputs/paper_v2}"
 
+PYTHON_BIN="${PYTHON_BIN:-.venv/bin/python}"
+if [[ ! -x "$PYTHON_BIN" ]]; then
+  PYTHON_BIN="$(command -v python3 || command -v python)"
+fi
+
 export MAIN_PATH
 export SCAL_PATH
 export OUT_DIR
 
-.venv/bin/python - <<'PY'
+"$PYTHON_BIN" - <<'PY'
 import os
 from pathlib import Path
 import numpy as np

@@ -9,18 +9,21 @@ import sys
 import time
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Dict, Iterable, List
+from typing import Dict, Iterable, List, Sequence, Set, Tuple
 
 import pandas as pd
 
 from ..costs import build_edge_data, compute_distance_and_time_matrices, evaluate_routes
-from ..io.export_csv import (
-    resolve_output_paths,
-    write_results_main,
-    write_results_routes,
-    write_results_significance,
+from ..io.export_csv import resolve_output_paths, write_results_significance
+from ..io.schema import (
+    CostSpec,
+    RESULTS_MAIN_COLUMNS,
+    RESULTS_ROUTES_COLUMNS,
+    RouteRecord,
+    RunResult,
+    ScenarioSpec,
+    SolverOutput,
 )
-from ..io.schema import CostSpec, RouteRecord, RunResult, ScenarioSpec, SolverOutput
 from ..risk import compute_risk_matrix
 from ..scenario import (
     generate_scenario,
@@ -97,22 +100,37 @@ def _time_limits_for_size(cfg, n_clients: int, profile_name: str) -> Dict[str, f
     return {"heuristic": scalability, "highs": 0.0}
 
 
-def _iter_specs(cfg, profile_name: str, max_cases: int = 0) -> Iterable[ScenarioSpec]:
+def _iter_specs(
+    cfg,
+    profile_name: str,
+    max_cases: int = 0,
+    shard_index: int = 0,
+    num_shards: int = 1,
+) -> Iterable[ScenarioSpec]:
+    if num_shards < 1:
+        raise ValueError("num_shards must be >= 1")
+    if shard_index < 0 or shard_index >= num_shards:
+        raise ValueError("shard_index must be in [0, num_shards)")
+
     profile = cfg.profiles[profile_name]
     sizes = list(profile.sizes)
     if profile.include_scalability:
         sizes.append(cfg.scalability_size)
 
     count = 0
-    for seed, n, b, d, k, lo, ltw in itertools.product(
-        profile.seeds,
-        sizes,
-        profile.bs_counts,
-        profile.deltas_min,
-        profile.edge_samples,
-        profile.lambda_out,
-        profile.lambda_tw,
+    for spec_idx, (seed, n, b, d, k, lo, ltw) in enumerate(
+        itertools.product(
+            profile.seeds,
+            sizes,
+            profile.bs_counts,
+            profile.deltas_min,
+            profile.edge_samples,
+            profile.lambda_out,
+            profile.lambda_tw,
+        )
     ):
+        if spec_idx % num_shards != shard_index:
+            continue
         if max_cases and count >= max_cases:
             break
         run_key = (
@@ -196,6 +214,79 @@ def _compute_gap_pct(incumbent_obj: float | None, best_bound: float | None) -> f
     return max(0.0, gap)
 
 
+def _ensure_columns(df: pd.DataFrame, columns: Sequence[str]) -> pd.DataFrame:
+    for col in columns:
+        if col not in df.columns:
+            df[col] = pd.NA
+    return df[list(columns)]
+
+
+def _rows_to_main_df(rows: List[RunResult]) -> pd.DataFrame:
+    df = pd.DataFrame([row.to_row() for row in rows])
+    if df.empty:
+        df = pd.DataFrame(columns=RESULTS_MAIN_COLUMNS)
+    return _ensure_columns(df, RESULTS_MAIN_COLUMNS)
+
+
+def _rows_to_routes_df(rows: List[RouteRecord]) -> pd.DataFrame:
+    df = pd.DataFrame([row.__dict__ for row in rows])
+    if df.empty:
+        df = pd.DataFrame(columns=RESULTS_ROUTES_COLUMNS)
+    return _ensure_columns(df, RESULTS_ROUTES_COLUMNS)
+
+
+def _merge_resume_df(
+    existing: pd.DataFrame | None,
+    fresh: pd.DataFrame,
+    dedup_keys: Sequence[str],
+    columns: Sequence[str],
+) -> pd.DataFrame:
+    if existing is None or existing.empty:
+        return _ensure_columns(fresh, columns)
+    if fresh.empty:
+        return _ensure_columns(existing.copy(), columns)
+
+    merged = pd.concat([existing, fresh], ignore_index=True)
+    if dedup_keys:
+        merged = merged.drop_duplicates(subset=list(dedup_keys), keep="first")
+    else:
+        merged = merged.drop_duplicates(keep="first")
+    return _ensure_columns(merged, columns)
+
+
+def _solver_run_id(profile_name: str, spec: ScenarioSpec, method: str) -> str:
+    return f"{profile_name}_{spec.run_id}_{method}"
+
+
+def _planned_methods(cfg, base_claim_regime: str) -> List[str]:
+    methods: List[str]
+    if cfg.solver.heuristic_engine.lower() == "pyvrp":
+        methods = ["pyvrp_main"]
+    else:
+        methods = ["ortools_main", "pyvrp_baseline"]
+    if base_claim_regime != "scalability_only":
+        methods.append("highs_exact_bound")
+    return methods
+
+
+def _existing_main_lookup(df: pd.DataFrame | None) -> Dict[str, dict]:
+    if df is None or df.empty:
+        return {}
+    out: Dict[str, dict] = {}
+    for row in df.to_dict(orient="records"):
+        out[str(row.get("run_id", ""))] = row
+    return out
+
+
+def _existing_main_keys(df: pd.DataFrame | None) -> Set[Tuple[str, str]]:
+    if df is None or df.empty:
+        return set()
+    keys: Set[Tuple[str, str]] = set()
+    for _, row in df[["run_id", "method"]].dropna().iterrows():
+        keys.add((str(row["run_id"]), str(row["method"])))
+    return keys
+
+
 def run_experiment_matrix(
     cfg,
     profile_name: str,
@@ -203,6 +294,11 @@ def run_experiment_matrix(
     max_cases: int = 0,
     freeze_benchmarks: bool = False,
     benchmark_dir: str | Path | None = None,
+    shard_index: int = 0,
+    num_shards: int = 1,
+    resume: bool = False,
+    existing_main_df: pd.DataFrame | None = None,
+    existing_routes_df: pd.DataFrame | None = None,
 ) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     timestamp = datetime.now(timezone.utc).isoformat()
     git_sha = _git_sha_or_unknown()
@@ -211,11 +307,46 @@ def run_experiment_matrix(
     main_rows: List[RunResult] = []
     route_rows: List[RouteRecord] = []
 
+    main_path, routes_path, sig_path = resolve_output_paths(output_main_path)
     benchmark_root = Path(benchmark_dir) if benchmark_dir else None
 
-    for spec in _iter_specs(cfg, profile_name=profile_name, max_cases=max_cases):
+    if resume:
+        if existing_main_df is None and main_path.exists():
+            existing_main_df = _ensure_columns(pd.read_csv(main_path), RESULTS_MAIN_COLUMNS)
+        if existing_routes_df is None and routes_path.exists():
+            existing_routes_df = _ensure_columns(pd.read_csv(routes_path), RESULTS_ROUTES_COLUMNS)
+
+    existing_main_df = (
+        _ensure_columns(existing_main_df, RESULTS_MAIN_COLUMNS)
+        if existing_main_df is not None
+        else None
+    )
+    existing_routes_df = (
+        _ensure_columns(existing_routes_df, RESULTS_ROUTES_COLUMNS)
+        if existing_routes_df is not None
+        else None
+    )
+    resume_keys = _existing_main_keys(existing_main_df) if resume else set()
+    existing_lookup = _existing_main_lookup(existing_main_df) if resume else {}
+
+    for spec in _iter_specs(
+        cfg,
+        profile_name=profile_name,
+        max_cases=max_cases,
+        shard_index=shard_index,
+        num_shards=num_shards,
+    ):
         base_claim_regime = _claim_regime(spec.n_clients, cfg.scalability_size)
         time_limits = _time_limits_for_size(cfg, spec.n_clients, profile_name)
+        planned_methods = _planned_methods(cfg, base_claim_regime)
+
+        if resume:
+            planned_keys = {
+                (_solver_run_id(profile_name, spec, method), method)
+                for method in planned_methods
+            }
+            if planned_keys and planned_keys.issubset(resume_keys):
+                continue
 
         scenario_id = scenario_instance_id(spec)
         frozen_path = None
@@ -247,70 +378,78 @@ def run_experiment_matrix(
         runtime_edge_s = time.perf_counter() - edge_start
 
         solver_outputs: List[SolverOutput] = []
+        highs_existing_row = None
+        for method in planned_methods:
+            run_id = _solver_run_id(profile_name, spec, method)
+            key = (run_id, method)
+            if resume and key in resume_keys:
+                if method == "highs_exact_bound":
+                    highs_existing_row = existing_lookup.get(run_id)
+                continue
 
-        if cfg.solver.heuristic_engine.lower() == "pyvrp":
-            solver_outputs.append(
-                _safe_solver_call(
-                    "pyvrp_main",
-                    solve_with_pyvrp,
-                    scenario,
-                    edge,
-                    cfg.num_uavs,
-                    cfg.weight_scale,
-                    spec.seed,
-                    cfg.solver.pyvrp_max_iterations,
-                    min(cfg.solver.pyvrp_max_runtime_s, time_limits["heuristic"]),
+            if method == "pyvrp_main":
+                solver_outputs.append(
+                    _safe_solver_call(
+                        method,
+                        solve_with_pyvrp,
+                        scenario,
+                        edge,
+                        cfg.num_uavs,
+                        cfg.weight_scale,
+                        spec.seed,
+                        cfg.solver.pyvrp_max_iterations,
+                        min(cfg.solver.pyvrp_max_runtime_s, time_limits["heuristic"]),
+                    )
                 )
-            )
-        else:
-            solver_outputs.append(
-                _safe_solver_call(
-                    "ortools_main",
-                    solve_with_ortools,
-                    scenario,
-                    edge,
-                    {
-                        "num_uavs": cfg.num_uavs,
-                        "ortools_first_solution": cfg.solver.ortools_first_solution,
-                        "ortools_metaheuristic": cfg.solver.ortools_metaheuristic,
-                        "cost_scale": cfg.cost_scale,
-                    },
-                    spec.seed,
-                    spec.tw_mode,
-                    spec.lambda_tw,
-                    cfg.weight_scale,
-                    time_limits["heuristic"],
+            elif method == "ortools_main":
+                solver_outputs.append(
+                    _safe_solver_call(
+                        method,
+                        solve_with_ortools,
+                        scenario,
+                        edge,
+                        {
+                            "num_uavs": cfg.num_uavs,
+                            "ortools_first_solution": cfg.solver.ortools_first_solution,
+                            "ortools_metaheuristic": cfg.solver.ortools_metaheuristic,
+                            "cost_scale": cfg.cost_scale,
+                        },
+                        spec.seed,
+                        spec.tw_mode,
+                        spec.lambda_tw,
+                        cfg.weight_scale,
+                        time_limits["heuristic"],
+                    )
                 )
-            )
-            solver_outputs.append(
-                _safe_solver_call(
-                    "pyvrp_baseline",
-                    solve_with_pyvrp,
-                    scenario,
-                    edge,
-                    cfg.num_uavs,
-                    cfg.weight_scale,
-                    spec.seed,
-                    cfg.solver.pyvrp_max_iterations,
-                    min(cfg.solver.pyvrp_max_runtime_s, time_limits["heuristic"]),
+            elif method == "pyvrp_baseline":
+                solver_outputs.append(
+                    _safe_solver_call(
+                        method,
+                        solve_with_pyvrp,
+                        scenario,
+                        edge,
+                        cfg.num_uavs,
+                        cfg.weight_scale,
+                        spec.seed,
+                        cfg.solver.pyvrp_max_iterations,
+                        min(cfg.solver.pyvrp_max_runtime_s, time_limits["heuristic"]),
+                    )
                 )
-            )
-
-        if base_claim_regime != "scalability_only":
-            solver_outputs.append(
-                _safe_solver_call(
-                    "highs_exact_bound",
-                    solve_with_highs,
-                    scenario,
-                    edge,
-                    cfg.num_uavs,
-                    cfg.weight_scale,
-                    time_limits["highs"],
-                    spec.tw_mode,
-                    float(cfg.cost_scale) * float(spec.lambda_tw) / 60.0,
-                    0.0,
+            elif method == "highs_exact_bound":
+                solver_outputs.append(
+                    _safe_solver_call(
+                        method,
+                        solve_with_highs,
+                        scenario,
+                        edge,
+                        cfg.num_uavs,
+                        cfg.weight_scale,
+                        time_limits["highs"],
+                        spec.tw_mode,
+                        float(cfg.cost_scale) * float(spec.lambda_tw) / 60.0,
+                        0.0,
+                    )
                 )
-            )
 
         highs_bound = None
         highs_out: SolverOutput | None = None
@@ -319,17 +458,22 @@ def run_experiment_matrix(
                 highs_out = out
                 highs_bound = _sanitize_finite(out.bound)
                 break
+        if highs_bound is None and highs_existing_row is not None:
+            highs_bound = _sanitize_finite(highs_existing_row.get("best_bound"))
 
         exact_certified = False
-        if base_claim_regime == "exact" and highs_out is not None:
-            exact_certified = _is_optimal_status(highs_out.status)
+        if base_claim_regime == "exact":
+            if highs_out is not None:
+                exact_certified = _is_optimal_status(highs_out.status)
+            elif highs_existing_row is not None:
+                exact_certified = str(highs_existing_row.get("claim_regime", "")) == "exact"
 
         claim_regime = base_claim_regime
         if base_claim_regime == "exact" and not exact_certified:
             claim_regime = "bound_gap"
 
         for out in solver_outputs:
-            run_id = f"{profile_name}_{spec.run_id}_{out.method}"
+            run_id = _solver_run_id(profile_name, spec, out.method)
             feasible_flag = 0
             on_time_pct = None
             total_tardiness_min = None
@@ -411,9 +555,30 @@ def run_experiment_matrix(
                 )
             )
 
-    main_path, routes_path, sig_path = resolve_output_paths(output_main_path)
-    df_main = write_results_main(main_path, main_rows)
-    df_routes = write_results_routes(routes_path, route_rows)
+    df_main_fresh = _rows_to_main_df(main_rows)
+    df_routes_fresh = _rows_to_routes_df(route_rows)
+
+    if resume:
+        df_main = _merge_resume_df(
+            existing=existing_main_df,
+            fresh=df_main_fresh,
+            dedup_keys=["run_id", "method"],
+            columns=RESULTS_MAIN_COLUMNS,
+        )
+        df_routes = _merge_resume_df(
+            existing=existing_routes_df,
+            fresh=df_routes_fresh,
+            dedup_keys=["run_id", "uav_id", "route_node_sequence"],
+            columns=RESULTS_ROUTES_COLUMNS,
+        )
+    else:
+        df_main = df_main_fresh
+        df_routes = df_routes_fresh
+
+    main_path.parent.mkdir(parents=True, exist_ok=True)
+    routes_path.parent.mkdir(parents=True, exist_ok=True)
+    df_main.to_csv(main_path, index=False)
+    df_routes.to_csv(routes_path, index=False)
 
     sig_rows = compute_significance_results(df_main)
     df_sig = write_results_significance(sig_path, sig_rows)
