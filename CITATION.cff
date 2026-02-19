@@ -1,7 +1,7 @@
 cff-version: 1.2.0
 message: "If you use this repository, please cite the software package and related article."
-title: "Reliability-Aware Multi-UAV Pickup and Delivery under Communication Risk and Soft Time Windows"
-version: "v1.4.0-journal-repro"
+title: "Reliability-Aware Multi-UAV Routing under Communication Outage Risk and Soft Time Windows"
+version: "v1.5.0-journal-repro"
 type: software
 authors:
   - family-names: "Abbaszadeh"
@@ -12,8 +12,8 @@ repository-code: "https://github.com/alirezaabbaszadeh/uav-tr-e-journal-repro"
 license: "MIT"
 keywords:
   - UAV logistics
-  - pickup and delivery
-  - VRPTW
-  - communication outage risk
+  - vehicle routing
   - soft time windows
+  - communication outage risk
+  - operational reliability
   - reproducible research

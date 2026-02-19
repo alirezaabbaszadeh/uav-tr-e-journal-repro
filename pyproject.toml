@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "uavtre"
 version = "1.0.0"
-description = "Reliability-aware multi-UAV pickup and delivery benchmark framework"
+description = "Reliability-aware multi-UAV routing benchmark framework"
 readme = "README.md"
 requires-python = ">=3.12"
 license = { text = "MIT" }

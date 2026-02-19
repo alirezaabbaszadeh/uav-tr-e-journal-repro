@@ -1,10 +1,10 @@
-title: Reliability-Aware Multi-UAV Pickup and Delivery under Communication Risk and Soft Time Windows
-running_title: Reliability-Aware Multi-UAV Logistics
-abstract: Urban UAV logistics must satisfy time-window service levels under communication uncertainty. We study a reliability-aware multi-UAV pickup-and-delivery problem with an arc-level outage-risk model and a calibrated objective combining an energy proxy, risk, and soft time-window tardiness. All evidence is locked to an audited campaign (journal_v3_full_20260219_000231) with conservative claim policy (exact with certificate for N<=10; bound-gap for N=20 and N=40; scalability-only for N=80).
-keywords: UAV logistics; pickup and delivery; VRPTW; soft time windows; communication outage risk; reproducible research
+title: Reliability-Aware Multi-UAV Routing under Communication Outage Risk and Soft Time Windows
+running_title: Reliability-Aware Multi-UAV Routing
+abstract: Urban UAV logistics must meet time-window service levels while maintaining reliable command-and-control connectivity. We study a reliability-aware multi-UAV routing problem in which arc-level communication outage risk, estimated from an air-to-ground channel model and base-station layouts, is integrated with an energy proxy and soft time windows via a calibrated objective. We evaluate a solver stack combining an OR-Tools heuristic for scalable planning, a HiGHS mixed-integer model for certificate-gated exact solutions and bounds, and a hard time-window baseline (PyVRP). All evidence is locked to an audited campaign (journal_v3_full_20260219_000231) with a conservative claim regime: exact with certificate for N<=10, bound-gap for N=20/40, and scalability-only reporting for N=80.
+keywords: UAV logistics; vehicle routing; soft time windows; communication outage risk; operational reliability; reproducible research
 authors: Alireza Abbaszadeh
 corresponding_author: Alireza Abbaszadeh (alireza.abbaszadeh8558@iau.ir)
 affiliations: Department of Computer Engineering, Islamic Azad University, Mashhad, Iran
 funding: No external funding.
 conflicts: The author declares no conflict of interest.
-data_code_availability: "Code and locked evidence artifacts: https://github.com/alirezaabbaszadeh/uav-tr-e-journal-repro/releases/tag/v1.4.0-journal-repro."
+data_code_availability: "Code and locked evidence artifacts: https://github.com/alirezaabbaszadeh/uav-tr-e-journal-repro/releases/tag/v1.5.0-journal-repro."

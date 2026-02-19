@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import re
 import subprocess
 import traceback
 from datetime import datetime, timezone
@@ -367,6 +368,33 @@ def run_pipeline(
         metadata = (ctx.out_submit_dir / "TR_E_METADATA.yaml").read_text(encoding="utf-8")
         todo_left = "TODO_" in metadata
 
+        # Manuscript quality gates (LaTeX + bibliography + required assets).
+        log_path = ctx.out_manuscript_dir / "camera_ready" / "main.log"
+        overfull_free = False
+        if log_path.exists():
+            log_text = log_path.read_text(encoding="utf-8", errors="ignore")
+            overfull_free = "Overfull \\hbox" not in log_text
+
+        bbl_path = ctx.out_manuscript_dir / "camera_ready" / "main.bbl"
+        bib_count = None
+        bib_count_ok = False
+        if bbl_path.exists():
+            bbl = bbl_path.read_text(encoding="utf-8", errors="ignore")
+            m = re.search(r"\\begin\{thebibliography\}\{(\d+)\}", bbl)
+            if m:
+                try:
+                    bib_count = int(m.group(1))
+                    bib_count_ok = bib_count >= 45
+                except Exception:
+                    bib_count_ok = False
+
+        required_tables = [
+            manuscript_root / "generated" / "tables" / "tab_comm_params.tex",
+            manuscript_root / "generated" / "tables" / "tab_tw_families.tex",
+            manuscript_root / "generated" / "tables" / "tab_significance_summary.tex",
+        ]
+        required_tables_present = all(t.exists() for t in required_tables)
+
         report = {
             "generated_at_utc": utc_now_iso(),
             "campaign_id": campaign_id,
@@ -380,8 +408,14 @@ def run_pipeline(
                 "camera_ready_bundle_exists": cam_manifest_path.exists(),
                 "pack_passed": bool(check.get("passed", False)),
                 "metadata_todo_free": not todo_left,
+                "latex_overfull_free": bool(overfull_free),
+                "bibliography_count_ge_45": bool(bib_count_ok),
+                "required_tables_present": bool(required_tables_present),
             },
             "pack_check": check,
+            "latex": {"overfull_free": overfull_free},
+            "bibliography": {"count": bib_count, "min_required": 45},
+            "assets": {"required_tables": [p.as_posix() for p in required_tables]},
         }
         passed = all(bool(v) for v in report["checks"].values())
         report["passed"] = passed

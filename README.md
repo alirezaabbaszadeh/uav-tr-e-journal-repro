@@ -1,6 +1,6 @@
 # uav_tr_e_project
 
-Journal-grade reproducibility repository for reliability-aware multi-UAV pickup and delivery experiments targeting *Transportation Research Part E* (TR-E).
+Journal-grade reproducibility repository for reliability-aware multi-UAV routing experiments targeting *Transportation Research Part E* (TR-E).
 
 ## Scope
 - Main heuristic engine: OR-Tools with soft/hard TW support and net-load capacity dimension.

@@ -1,22 +1,23 @@
 \label{sec:problem}
 
-We consider an urban service region with one depot and $N$ customer locations served by a homogeneous fleet of $M$ UAVs. Each customer $i\in\mathcal{C}$ has a service duration $s_i$ and a delivery time window $[a_i,b_i]$ (in seconds). UAVs fly at a fixed altitude $h$ with constant cruise speed $v$, and travel times are derived from Euclidean distances in the frozen benchmark instances.
+We consider an urban service region with one depot and $N$ customer locations served by a homogeneous fleet of $M$ UAVs. Each customer $i\in\mathcal{C}$ has a deterministic service duration $s_i$ and a service time window $[a_i,b_i]$ (seconds). UAVs fly at a fixed altitude $h$ with constant cruise speed $v$; travel times and distances are derived from Euclidean geometry in frozen benchmark instances.
 
-\paragraph{Pickup-and-delivery with capacity propagation.}
-Each customer induces a pickup quantity $p_i$ and a delivery quantity $d_i$ (kg). UAV payload capacity is $Q$ (kg). Along a route, the vehicle load evolves as deliveries decrease and pickups increase the carried load. We enforce capacity propagation as in pickup-and-delivery routing models \citep{parragh2008,ropke2006}.
+\paragraph{Mixed pickup and delivery demands (no pairing/precedence).}
+Each customer induces a delivery quantity $d_i$ (kg), a pickup quantity $p_i$ (kg), or both. Importantly, requests are \emph{not} paired pickup--delivery jobs with precedence constraints between nodes (i.e., this is not a PDPTW pairing model). Instead, pickups represent items collected at customer locations and returned to the depot by the end of the UAV route. This choice matches common urban last-mile task abstractions and keeps the focus on time-window service and communication reliability.
+
+\paragraph{Capacity propagation.}
+UAV payload capacity is $Q$ (kg). Along a route, deliveries decrease and pickups increase the carried load. We model capacity propagation in the exact/bound formulation (Section~\ref{sec:formulation}) and use a consistent capacity abstraction in the heuristic engine to discourage operationally implausible routes.
 
 \paragraph{Travel time and energy proxy.}
-Let $\tau_{ij}$ denote travel time between nodes $i$ and $j$. We model energy via a linear proxy proportional to flight distance. While this abstraction ignores payload- and speed-dependent power curves, it is adequate to study calibrated energy--risk--service tradeoffs and is consistent with common UAV routing proxies \citep{dorling2017}.
+Let $\tau_{ij}$ denote travel time between nodes $i$ and $j$. We model energy via a linear proxy proportional to flight distance. While this abstraction ignores payload- and speed-dependent power curves, it is adequate for studying calibrated energy--risk--service tradeoffs and is consistent with common UAV routing proxies \citep{dorling2017}.
 
 \paragraph{Communication environment and risk.}
-A set of $B$ base stations with known planar coordinates is given. At any point along a flight segment, a UAV is assumed to associate with the base station that maximizes SNR. We define an outage event when the best SNR falls below a threshold; arc outage risk is estimated by sampling $K$ points along each edge (Section~\ref{sec:risk_model}).
+A set of $B$ base stations with known planar coordinates is given. Along a flight segment, a UAV is assumed to associate with the base station that maximizes SNR. We define an outage event when the best SNR falls below a threshold; arc outage risk is estimated by sampling $K$ points along each edge (Section~\ref{sec:risk_model}).
 
 \paragraph{Time-window families A and B.}
-To study robustness under service stress, we define two time-window families:
-\begin{itemize}[leftmargin=*]
-\item \textbf{Family A (baseline):} windows are generated around baseline service times with a minimum width parameter $\Delta$.
-\item \textbf{Family B (stress):} windows are tightened and shifted to induce higher tardiness pressure while preserving comparability across instances.
-\end{itemize}
+To study robustness under service stress, we define two time-window families. Family A is a baseline construction around a deterministic schedule proxy, while Family B applies a controlled tightening and jittering of windows to induce higher tardiness pressure while preserving comparability across instances. Table~\ref{tab:tw_families} provides an exact, code-aligned definition.
+
+\input{generated/tables/tab_tw_families.tex}
 
 \paragraph{Soft vs hard time windows.}
 Hard time windows impose $a_i \le t_i \le b_i$ for service start times $t_i$, which can lead to infeasibility at larger sizes or under stress. We therefore focus on soft time windows, where late service is allowed but penalized via a tardiness variable; a hard-TW baseline is retained for contrast.

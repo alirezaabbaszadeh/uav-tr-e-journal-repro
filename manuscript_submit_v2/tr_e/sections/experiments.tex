@@ -1,26 +1,25 @@
 \label{sec:experiments}
 
-All numerical evidence in this manuscript is locked to an audited campaign with frozen benchmark instances and recorded execution metadata. Experiments are executed under WSL2 on a CPU-sharded setup (12 logical shards), because the core solvers used here (OR-Tools, HiGHS, PyVRP) are CPU-bound and do not benefit materially from consumer GPU acceleration.
+All numerical evidence in this manuscript is locked to a single audited campaign with frozen benchmark instances and recorded execution metadata. Experiments are executed under WSL2 on a CPU-sharded setup (12 logical shards). This execution mode is intentional: the core solvers used here (OR-Tools, HiGHS, PyVRP) are CPU-bound and do not benefit materially from consumer GPU acceleration.
 
 \subsection{Scenario matrix}
 We evaluate two time-window families (A baseline and B stress) and vary:
 \begin{itemize}[leftmargin=*]
 \item Problem size $N\in\{10,20,40\}$ for the main-table regime, and $N=80$ for scalability-only characterization.
 \item Base-station density $B\in\{4,7\}$ in the core stage, and $B\in\{4,7,10\}$ in robustness stages.
-\item Minimum time-window width $\Delta\in\{10,5\}$ in core and $\Delta\in\{5,2\}$ in robustness.
-\item Risk weight $\lambda_{out}$ (core: $\{0.5,1.0\}$; robustness includes $0.0$).
-\item Soft time-window weight $\lambda_{TW}$ (core: $1.0$; robustness includes $0.0$ and $5.0$).
-\item Risk sampling resolution $K$ (core: $10$; sensitivity stage includes $\{5,10,20\}$).
+\item Minimum time-window width $\Delta$ (minutes), with tighter values used in stress/robustness slices.
+\item Risk weight $\lambda_{out}$ and soft time-window penalty $\lambda_{TW}$.
+\item Risk sampling resolution $K$ (core: 10; sensitivity: \{5,10,20\}).
 \end{itemize}
 
-The full run plan (including shard commands, configuration overrides, and frozen instance identifiers) is recorded in the campaign manifests and command log.
+The complete run plan (including shard commands, configuration overrides, and frozen instance identifiers) is recorded in the campaign directory via \code{RUN\_PLAN.json}, \code{CAMPAIGN\_MANIFEST.json}, and \code{COMMAND\_LOG.csv}.
 
 \subsection{Baselines and fairness}
 We compare three methods:
 \begin{itemize}[leftmargin=*]
 \item \textbf{OR-Tools (soft TW)} as the main heuristic.
 \item \textbf{HiGHS (MIP)} as an exact/bound engine for small/medium sizes.
-\item \textbf{PyVRP (hard TW)} as a baseline representing strict feasibility.
+\item \textbf{PyVRP (hard TW)} as a strict-feasibility baseline.
 \end{itemize}
 
 To ensure comparability, we apply per-instance time limits to solvers (heuristics typically 30 seconds; HiGHS bounded by 30--45 seconds depending on size). For $N=80$, we do not attempt bound/gap evidence and report scalability-only metrics.
@@ -29,10 +28,10 @@ To ensure comparability, we apply per-instance time limits to solvers (heuristic
 For each instance and method, we record:
 \begin{itemize}[leftmargin=*]
 \item \textbf{Service quality:} on-time rate (percentage of customers with zero tardiness) and total tardiness (minutes).
-\item \textbf{Operational cost proxies:} energy proxy and communication risk summaries (mean arc outage risk and max-route risk).
+\item \textbf{Operational cost proxies:} energy proxy and communication risk summaries (mean arc outage risk and max-route mean risk).
 \item \textbf{Compute:} edge-risk preprocessing time, solve time, and total runtime.
 \item \textbf{Bound-gap evidence:} incumbent objective, best available bound, and a sanitized nonnegative gap (only for $N\in\{20,40\}$).
 \end{itemize}
 
 \subsection{Statistical protocol}
-We use paired comparisons via the Wilcoxon signed-rank test \citep{wilcoxon1945} across matched scenario keys, with Holm-Bonferroni correction for multiple testing \citep{holm1979}. We report effect direction, a rank-biserial effect size, and bootstrap confidence intervals for median differences \citep{efron1993,kerby2014}.
+We use paired comparisons via the Wilcoxon signed-rank test \citep{wilcoxon1945} across matched scenario keys, with Holm-Bonferroni correction for multiple testing \citep{holm1979}. We report effect direction, a rank-biserial effect size, and bootstrap confidence intervals for median differences \citep{efron1993,kerby2014}. A compact significance summary is reported in Table~\ref{tab:significance_summary}.

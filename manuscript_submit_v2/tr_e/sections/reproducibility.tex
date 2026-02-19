@@ -1,6 +1,6 @@
 All manuscript tables and figures are generated from a single immutable evidence campaign that accompanies the repository release. The campaign directory contains frozen benchmark instances, a full run plan, an environment snapshot, a command log, and aggregated paper tables. No solver reruns are required to rebuild the manuscript: the \code{submit\_v2} pipeline post-processes the locked campaign artifacts and regenerates all LaTeX tables/figures.
 
-The TR-E upload pack additionally includes an evidence index, a claim guard report, an audit recheck report, a table/figure index, and SHA256 checksums. Together, these artifacts allow reviewers to trace reported results back to auditable sources.
+The TR-E upload pack additionally includes an evidence index, a claim guard report, an audit recheck report, a table/figure index, and SHA256 checksums. Together, these artifacts allow reviewers to trace reported results back to auditable sources and to reproduce the manuscript assets deterministically.
 
 A minimal reproduction path is:
 \begin{verbatim}
@@ -13,4 +13,4 @@ python3 scripts/submit_v2/check_tr_e_pack.py \
   --campaign-id <campaign_id>
 \end{verbatim}
 
-We follow reproducible computational research principles as advocated by \citet{peng2011,stodden2016}.
+We follow reproducible computational research principles as advocated by \citet{peng2011,stodden2016,sandve2013}.

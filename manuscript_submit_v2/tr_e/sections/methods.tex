@@ -1,18 +1,29 @@
 \label{sec:methods}
 
-We adopt a solver stack designed to (i) provide high-quality feasible solutions under tight runtime budgets, (ii) provide certificate-gated exactness and bounds on small/medium instances, and (iii) remain fully reproducible.
+We adopt a solver stack designed to (i) produce high-quality feasible solutions under tight runtime budgets, (ii) provide certificate-gated exactness and bounds on small and medium instances, and (iii) remain fully reproducible.
 
 \subsection{Main heuristic: OR-Tools with soft time windows}
-Our main engine is Google OR-Tools' vehicle routing solver \citep{ortools}. We build a multi-vehicle routing model with time dimensions for service timing and a load dimension for capacity propagation. Hard operational constraints (e.g., route continuity and capacity propagation) are enforced structurally, while time-window violations are handled via a soft penalty.
+Our main engine is Google OR-Tools' vehicle routing solver \citep{ortools}. We construct a multi-vehicle routing model with:
+\begin{itemize}[leftmargin=*]
+\item a \textbf{time dimension} that accumulates travel and service times and enforces earliest-start constraints, and
+\item a \textbf{net-load capacity dimension} that approximates load evolution under pickups and deliveries.
+\end{itemize}
+The arc cost used by OR-Tools is consistent with the evaluated incumbent objective: a scaled combination of distance-based energy proxy and communication-risk contribution.
+
+\paragraph{Search configuration.}
+In the locked campaign, we use a constructive first-solution strategy followed by Guided Local Search to improve solution quality under a fixed time budget \citep{kilby1999gls}. The specific OR-Tools strategy names are recorded in the campaign configuration and manifests.
 
 \paragraph{Soft time windows as a linear tardiness penalty.}
-For each customer, service start times may exceed the latest time $b_i$, incurring a linear tardiness cost. This implementation matches the soft-TW term $\gamma\sum z_{ik}$ in \Cref{eq:obj}. The penalty weight is controlled by $\lambda_{TW}$ and is varied in robustness experiments to expose the energy--service tradeoff.
+For each customer $i$, the model enforces $t_i \ge a_i$ and applies a soft upper bound at $b_i$ using a linear penalty on tardiness. Concretely, OR-Tools penalizes violations of the latest-start time via a per-second penalty coefficient, which corresponds to the soft-TW term $\gamma\sum z_{ik}$ in \Cref{eq:obj}. The penalty weight is controlled by $\lambda_{TW}$ and is swept in robustness experiments to expose the energy--service tradeoff.
+
+\paragraph{Coverage and dropped nodes.}
+The OR-Tools routing API supports disjunctions (node dropping) with large penalties. In our protocol, a solution is treated as operationally feasible only if all customers are visited; any dropped-node solution is flagged infeasible during evaluation and excluded from KPI summaries.
 
 \subsection{Exact/bound engine: HiGHS MIP with certificate gating}
-To support reviewer-safe inference, we solve the MIP formulation with HiGHS \citep{highs} for small/medium sizes under explicit time limits. We label a run \emph{exact} only when HiGHS returns an optimality certificate; otherwise, the incumbent is treated as a heuristic solution and bounds/gaps are reported only when the dual bound is finite and compatible with the incumbent objective.
+To support reviewer-safe inference, we solve the MIP formulation with HiGHS \citep{highs} under explicit time limits. We label a run \emph{exact} only when HiGHS returns an optimality certificate (optimal status). Otherwise, the incumbent is treated as a heuristic solution; bounds and gaps are reported only when a finite dual bound is available and compatible with the incumbent objective.
 
-\subsection{Baseline: PyVRP (hard time windows)}
-We include PyVRP as a baseline metaheuristic solver \citep{pyvrp}. In our protocol, PyVRP retains hard time windows to represent a contrasting operational policy: strict compliance when feasible. Importantly, infeasibility under hard time windows is itself operationally meaningful. When time windows are tight or instances scale up, hard feasibility can collapse, motivating soft-TW policies that remain feasible while exposing the cost of lateness.
+\subsection{Baseline: PyVRP with hard time windows}
+We include PyVRP as a baseline metaheuristic solver \citep{pyvrp}. In our protocol, PyVRP retains hard time windows to represent a contrasting operational policy: strict compliance when feasible. Importantly, infeasibility under hard time windows is itself operationally meaningful. When windows are tight or instances scale up, hard feasibility can collapse, motivating soft-TW policies that remain feasible while exposing the cost of lateness.
 
 \subsection{Claim-safe reporting by size}
 All reporting follows the conservative policy in Section~\ref{sec:formulation}: exact-with-certificate for $N\le 10$, bound-gap evidence for $N\in\{20,40\}$, and scalability-only characterization for $N=80$. This policy is enforced automatically in the pipeline and verified by the audit gate.

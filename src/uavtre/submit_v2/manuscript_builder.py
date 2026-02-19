@@ -417,6 +417,214 @@ def _write_fig_scalability_summary(*, campaign_dir: Path, out_path: Path) -> Pat
     return out_path
 
 
+
+
+def _write_raw_tex(*, out_path: Path, tex: str) -> Path:
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    out_path.write_text(tex, encoding="utf-8")
+    return out_path
+
+
+def _num(v, default: float | None = None) -> float | None:
+    try:
+        if v is None:
+            return default
+        return float(v)
+    except Exception:
+        return default
+
+
+def _write_comm_params_table(*, out_path: Path, comm: dict) -> Path:
+    # Values are taken from configs/base.json to stay code-aligned.
+    freq_hz = _num(comm.get("freq_hz"), None)
+    freq_ghz = None if freq_hz is None else freq_hz / 1e9
+
+    rows = [
+        ("Carrier frequency", r"$f_c$", "--" if freq_ghz is None else f"{freq_ghz:.3g}", "GHz"),
+        (
+            "Transmit power",
+            r"$P_T$",
+            "--" if _num(comm.get("tx_power_dbm")) is None else f"{float(comm['tx_power_dbm']):.0f}",
+            "dBm",
+        ),
+        (
+            "Noise power",
+            r"$P_N$",
+            "--" if _num(comm.get("noise_dbm")) is None else f"{float(comm['noise_dbm']):.0f}",
+            "dBm",
+        ),
+        (
+            "Outage threshold",
+            r"$\mathrm{SNR}_{\min}$",
+            "--" if _num(comm.get("snr_threshold_db")) is None else f"{float(comm['snr_threshold_db']):.0f}",
+            "dB",
+        ),
+        ("LoS logistic (a)", r"$a$", "--" if _num(comm.get("los_a")) is None else f"{float(comm['los_a']):.2f}", "--"),
+        ("LoS logistic (b)", r"$b$", "--" if _num(comm.get("los_b")) is None else f"{float(comm['los_b']):.2f}", "--"),
+        (
+            "Excess loss (LoS)",
+            r"$\eta_{\mathrm{LoS}}$",
+            "--" if _num(comm.get("eta_los")) is None else f"{float(comm['eta_los']):.1f}",
+            "dB",
+        ),
+        (
+            "Excess loss (NLoS)",
+            r"$\eta_{\mathrm{NLoS}}$",
+            "--" if _num(comm.get("eta_nlos")) is None else f"{float(comm['eta_nlos']):.1f}",
+            "dB",
+        ),
+    ]
+
+    lines: list[str] = []
+    lines.append(r"\begin{table}[t]")
+    lines.append(r"\centering")
+    lines.append(r"\caption{Communication model parameters used in the locked campaign (from \texttt{configs/base.json}).}")
+    lines.append(r"\label{tab:comm_params}")
+    lines.append(r"{\small")
+    lines.append(r"\setlength{\tabcolsep}{4pt}")
+    lines.append(r"\begin{tabular}{llrl}")
+    lines.append(r"\toprule")
+    lines.append(r"Parameter & Symbol & Value & Units \\ ")
+    lines.append(r"\midrule")
+
+    for name, sym, val, unit in rows:
+        lines.append(f"{name} & {sym} & {val} & {unit} \\\\")
+
+    lines.append(r"\bottomrule")
+    lines.append(r"\end{tabular}")
+    lines.append(r"}")
+    lines.append(r"\end{table}")
+
+    tex = "\n".join(lines) + "\n"
+    return _write_raw_tex(out_path=out_path, tex=tex)
+
+
+def _write_tw_families_table(*, out_path: Path, shrink: float, jitter_min: float) -> Path:
+    # This table must remain consistent with src/uavtre/scenario/time_windows.py.
+
+    fam_a = (
+        r"Baseline centers $t_i^{\mathrm{base}}$ are computed by sorting customers by polar angle around the depot, "
+        r"splitting the ordered list into $M$ groups (round-robin), and accumulating travel+service time within each group. "
+        r"Family A windows are $a_i=\max(0,\,t_i^{\mathrm{base}}-\Delta)$ and $b_i=t_i^{\mathrm{base}}+\Delta$."
+    )
+
+    fam_b = (
+        r"Starting from Family A, define baseline width $w_i=(b_i-a_i)\,\cdot s$ with $s="
+        + f"{shrink:.2f}"
+        + r"$. Apply center jitter $c_i=t_i^{\mathrm{base}}+\epsilon_i$, $\epsilon_i\sim\mathcal{N}(0, ("
+        + f"{jitter_min:.1f}"
+        + r"\,\mathrm{min})^2)$. Set $a_i^B=\max(0,\,c_i-w_i/2)$ and $b_i^B=\max(a_i^B+60,\,c_i+w_i/2)$."
+    )
+
+    lines: list[str] = []
+    lines.append(r"\begin{table}[t]")
+    lines.append(r"\centering")
+    lines.append(r"\caption{Time-window family construction used in experiments (code-aligned).}")
+    lines.append(r"\label{tab:tw_families}")
+    lines.append(r"{\small")
+    lines.append(r"\setlength{\tabcolsep}{4pt}")
+    lines.append(r"\begin{tabularx}{\linewidth}{p{3.0cm}X}")
+    lines.append(r"\toprule")
+    lines.append(r"Family & Definition \\ ")
+    lines.append(r"\midrule")
+    lines.append(f"Family A (baseline) & {fam_a} \\\\")
+    lines.append(f"Family B (stress) & {fam_b} \\\\")
+    lines.append(r"\bottomrule")
+    lines.append(r"\end{tabularx}")
+    lines.append(r"}")
+    lines.append(r"\end{table}")
+
+    tex = "\n".join(lines) + "\n"
+    return _write_raw_tex(out_path=out_path, tex=tex)
+
+
+def _fmt_p(p: float | None) -> str:
+    if p is None:
+        return "--"
+    try:
+        v = float(p)
+    except Exception:
+        return "--"
+    if not math.isfinite(v):
+        return "--"
+    if v < 1e-3:
+        return f"{v:.2e}"
+    return f"{v:.3f}"
+
+
+def _fmt_ci(low: float | None, high: float | None, nd: int) -> str:
+    if low is None or high is None:
+        return "--"
+    try:
+        lo = float(low)
+        hi = float(high)
+    except Exception:
+        return "--"
+    if not (math.isfinite(lo) and math.isfinite(hi)):
+        return "--"
+    return f"[{lo:.{nd}f}, {hi:.{nd}f}]"
+
+
+def _write_significance_summary_table(*, out_path: Path, sig_a: pd.DataFrame, sig_b: pd.DataFrame) -> Path:
+    metrics = [
+        ("on_time_pct", "On-time (%)", 1),
+        ("total_tardiness_min", "Total tardiness (min)", 1),
+        ("total_energy", "Energy", 0),
+        ("risk_mean", "Mean arc risk", 3),
+        ("runtime_total_s", "Runtime (s)", 3),
+    ]
+
+    def _row(df: pd.DataFrame, metric: str):
+        q = df[(df["method_a"] == "ortools_main") & (df["method_b"] == "pyvrp_baseline") & (df["metric"] == metric)]
+        if q.empty:
+            return None
+        r = q.iloc[0]
+        return {
+            "p": r.get("p_value_adj"),
+            "es": r.get("effect_size"),
+            "lo": r.get("ci_low"),
+            "hi": r.get("ci_high"),
+            "n": r.get("n_pairs"),
+        }
+
+    lines = []
+    lines.append(r"\begin{table}[t]")
+    lines.append(r"\centering")
+    lines.append(r"\caption{Paired Wilcoxon comparisons (OR-Tools vs PyVRP) with Holm-adjusted $p$-values. Effect size is rank-biserial; CI is a bootstrap CI for the median difference (OR-Tools minus PyVRP).}")
+    lines.append(r"\label{tab:significance_summary}")
+    lines.append(r"{\small")
+    lines.append(r"\setlength{\tabcolsep}{3pt}")
+    lines.append(r"\begin{tabularx}{\linewidth}{p{2.8cm}rrXrrXr}")
+    lines.append(r"\toprule")
+    lines.append(r"Metric & $p_A$ & $r_A$ & CI$_A$ & $p_B$ & $r_B$ & CI$_B$ & Pairs (A/B) \\\\ ")
+    lines.append(r"\midrule")
+
+    for m, name, nd in metrics:
+        ra = _row(sig_a, m)
+        rb = _row(sig_b, m)
+
+        pa = _fmt_p(None if ra is None else ra["p"])
+        pb = _fmt_p(None if rb is None else rb["p"])
+
+        esa = _fmt(None if ra is None else ra["es"], 3)
+        esb = _fmt(None if rb is None else rb["es"], 3)
+
+        cia = _fmt_ci(None if ra is None else ra["lo"], None if ra is None else ra["hi"], nd)
+        cib = _fmt_ci(None if rb is None else rb["lo"], None if rb is None else rb["hi"], nd)
+
+        na = "--" if ra is None else str(int(float(ra["n"])))
+        nb = "--" if rb is None else str(int(float(rb["n"])))
+
+        lines.append(f"{name} & {pa} & {esa} & {cia} & {pb} & {esb} & {cib} & {na}/{nb} \\\\")
+
+    lines.append(r"\bottomrule")
+    lines.append(r"\end{tabularx}")
+    lines.append(r"}")
+    lines.append(r"\end{table}")
+
+    tex = "\n".join(lines) + "\n"
+    return _write_raw_tex(out_path=out_path, tex=tex)
+
 def generate_assets(*, campaign_dir: Path, manuscript_root: Path) -> list[Path]:
     """Generate manuscript tables and figures from campaign outputs only."""
 
@@ -622,6 +830,48 @@ def generate_assets(*, campaign_dir: Path, manuscript_root: Path) -> list[Path]:
             label="tab:risk_signal",
             columns=["Method", "Mean risk"],
             rows=rs_rows,
+        )
+    )
+
+
+
+    # Reviewer-facing parameter tables (code-aligned).
+    root = manuscript_root.parents[1]
+    cfg_path = root / "configs" / "base.json"
+    cfg = {}
+    try:
+        cfg = json.loads(cfg_path.read_text(encoding="utf-8"))
+    except Exception:
+        cfg = {}
+
+    comm = cfg.get("comm", {}) if isinstance(cfg, dict) else {}
+    tw = cfg.get("tw", {}) if isinstance(cfg, dict) else {}
+
+    written.append(
+        _write_comm_params_table(
+            out_path=tables_dir / "tab_comm_params.tex",
+            comm=comm,
+        )
+    )
+
+    shrink = float(tw.get("family_b_shrink", 0.8)) if isinstance(tw, dict) else 0.8
+    jitter = float(tw.get("family_b_jitter_min", 1.0)) if isinstance(tw, dict) else 1.0
+    written.append(
+        _write_tw_families_table(
+            out_path=tables_dir / "tab_tw_families.tex",
+            shrink=shrink,
+            jitter_min=jitter,
+        )
+    )
+
+    # Significance summary table (core stage; OR-Tools vs PyVRP).
+    sig_a = _load_csv(campaign_dir / "main_A_core" / "results_significance.csv")
+    sig_b = _load_csv(campaign_dir / "main_B_core" / "results_significance.csv")
+    written.append(
+        _write_significance_summary_table(
+            out_path=tables_dir / "tab_significance_summary.tex",
+            sig_a=sig_a,
+            sig_b=sig_b,
         )
     )
 

@@ -20,6 +20,9 @@ Given transmit power $P_T$ (dBm) and noise power $P_N$ (dBm), the received SNR i
   \mathrm{SNR} = P_T - \mathrm{PL}(d,\theta) - P_N.
 \end{equation}
 
+Table~\ref{tab:comm_params} lists the parameter values used in the locked campaign.
+\input{generated/tables/tab_comm_params.tex}
+
 \subsection{Arc outage risk}
 For each arc $(i,j)$ we sample $K$ points along the straight-line segment connecting $i$ and $j$. At each sample point $\mathbf{p}$, the UAV associates with the base station that yields the maximum SNR, denoted
 \begin{equation}
@@ -40,5 +43,5 @@ The arc risk is estimated as the mean outage rate over samples:
 \end{equation}
 yielding $R_{ij}\in[0,1]$ as an operationally interpretable reliability score. Increasing $K$ reduces Monte Carlo noise but increases preprocessing time; we explicitly analyze $K$ sensitivity in the robustness campaign.
 
-\subsection{Interpretation and sensitivity}
-Risk depends strongly on base-station density $B$ and geometry. In sparse deployments, certain arcs become high-risk corridors, while densification can sharply reduce outage probability. This behavior is reflected in our managerial sensitivity analysis (Table~\ref{tab:managerial_support} and Figure~\ref{fig:bs_delta_effect}).
+\subsection{Interpretation and boundaries}
+Risk depends strongly on base-station density $B$ and geometry. In sparse deployments, certain arcs become high-risk corridors, while densification can sharply reduce outage probability. This behavior is reflected in our managerial sensitivity analysis (Table~\ref{tab:managerial_support} and Figure~\ref{fig:bs_delta_effect}). We emphasize that this risk signal is a simplified operational proxy: it captures geometry-driven outage exposure under a static channel abstraction, not network traffic, interference, or dynamic handover effects. The model is therefore suitable for comparative routing and sensitivity studies rather than for predicting absolute outage rates in a specific deployed cellular network.

@@ -10,10 +10,10 @@ Tables~\ref{tab:kpi_A} and \ref{tab:kpi_B} report service KPIs (on-time and tard
 \input{generated/tables/tab_cost_A.tex}
 \input{generated/tables/tab_cost_B.tex}
 
-PyVRP (hard TW) exhibits near-perfect on-time and near-zero tardiness \emph{conditional on feasibility} (Tables~\ref{tab:kpi_A}--\ref{tab:kpi_B}), which is expected under strict latest-start enforcement. This highlights a key interpretational point for practitioners and reviewers: hard time windows can make service KPIs look excellent on feasible subsets while masking brittleness at scale.
+PyVRP (hard TW) exhibits near-perfect on-time and near-zero tardiness \emph{conditional on feasibility} (Tables~\ref{tab:kpi_A}--\ref{tab:kpi_B}), which is expected under strict latest-start enforcement. For an operations audience, the key caution is that hard time windows can make service KPIs look excellent on feasible subsets while masking brittleness at scale.
 
 \subsection{Feasibility at scale: soft vs hard time-window policies}
-Feasibility is an operational requirement, not merely a solver output. Tables~\ref{tab:feas_A} and \ref{tab:feas_B} report feasibility rates by method and size. OR-Tools maintains high feasibility at $N=40$ in both families (0.972 in Family A and 0.969 in Family B)\evid{C3_A_N40_feasible_rate_a_n40_ortools}\evid{C3_B_N40_feasible_rate_b_n40_ortools}. In contrast, the hard-TW baseline returns no feasible solutions at $N=40$ (feasible rate 0)\evid{C3_A_N40_feasible_rate_a_n40_pyvrp}\evid{C3_B_N40_feasible_rate_b_n40_pyvrp}.
+Feasibility is an operational requirement, not merely a solver output. Tables~\ref{tab:feas_A} and \ref{tab:feas_B} report feasibility rates by method and size. OR-Tools maintains high feasibility at $N=40$ in both families (0.972 in Family A and 0.969 in Family B)\evid{C3_A_N40_feasible_rate_a_n40_ortools}\evid{C3_B_N40_feasible_rate_b_n40_ortools}. In contrast, the hard-TW baseline returns no feasible solutions at $N=40$ (feasible rate 0)\evid{C3_A_N40_feasible_rate_a_n40_pyvrp}\evid{C3_B_N40_feasible_rate_b_n40_pyvrp}. This gap between ``good when feasible'' and ``feasible at scale'' is a core motivation for soft time windows.
 
 \input{generated/tables/tab_feas_A.tex}
 \input{generated/tables/tab_feas_B.tex}
@@ -41,7 +41,7 @@ Communication risk responds strongly to base-station density and time-window tig
 
 \input{generated/tables/tab_risk_signal.tex}
 
-We further analyze base-station density and penalty calibration in Section~\ref{sec:insights}, where we connect risk shifts to service outcomes and discuss practical levers for operators.
+\subsection{Statistical reporting (paired, multiplicity-controlled)}
+To support reviewer scrutiny, we report Holm-adjusted p-values, effect sizes, and bootstrap confidence intervals for paired comparisons across matched scenario keys (Section~\ref{sec:experiments}). Table~\ref{tab:significance_summary} provides a compact summary for OR-Tools versus PyVRP on core metrics. When $p$-values are near conventional thresholds or when paired sample sizes shrink due to feasibility collapse, we use conservative language and avoid over-interpreting small runtime differences.
 
-\subsection{Statistical reporting (conservative)}
-We report adjusted p-values, effect sizes, and bootstrap confidence intervals for paired comparisons. As an example, for runtime (OR-Tools vs PyVRP) the Holm-adjusted p-values are near the 0.05 threshold in both families\evid{C5_A_runtime_p_holm_a}\evid{C5_B_runtime_p_holm_b}, motivating conservative language when interpreting runtime differences.
+\input{generated/tables/tab_significance_summary.tex}

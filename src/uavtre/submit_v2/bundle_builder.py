@@ -30,7 +30,7 @@ def _write_anonymous_overrides(bundle_dir: Path) -> None:
     (bundle_dir / "CITATION.cff").write_text(
         "cff-version: 1.2.0\n"
         "message: \"Please cite the camera-ready DOI after acceptance.\"\n"
-        "title: \"Reliability-Aware Multi-UAV Pickup and Delivery under Communication Risk and Soft Time Windows\"\n"
+        "title: \"Reliability-Aware Multi-UAV Routing under Communication Outage Risk and Soft Time Windows\"\n"
         "type: software\n"
         "authors:\n"
         "  - family-names: \"Anonymous\"\n"
@@ -60,10 +60,10 @@ def _write_anonymous_overrides(bundle_dir: Path) -> None:
 
     # Materialized metadata is anonymous-safe (no TODO tokens, no identity markers).
     (sub / "TR_E_METADATA.yaml").write_text(
-        "title: Reliability-Aware Multi-UAV Pickup and Delivery under Communication Risk and Soft Time Windows\n"
-        "running_title: Reliability-Aware Multi-UAV Logistics\n"
+        "title: Reliability-Aware Multi-UAV Routing under Communication Outage Risk and Soft Time Windows\n"
+        "running_title: Reliability-Aware Multi-UAV Routing\n"
         "abstract: Anonymous review version. Results are evidence-locked to the provided campaign artifacts.\n"
-        "keywords: UAV logistics; pickup and delivery; VRPTW; communication risk; soft time windows; reproducibility\n"
+        "keywords: UAV logistics; vehicle routing; soft time windows; communication outage risk; operational reliability; reproducibility\n"
         "authors: Anonymous Author\n"
         "corresponding_author: Anonymous Author\n"
         "affiliations: Anonymous Affiliation\n"

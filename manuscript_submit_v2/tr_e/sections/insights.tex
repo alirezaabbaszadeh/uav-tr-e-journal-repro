@@ -1,9 +1,9 @@
 \label{sec:insights}
 
-Transportation Research Part E emphasizes actionable, operations-facing implications. Using the robustness slices in the locked campaign, we highlight three managerial insights that follow directly from the audited sensitivity analyses.
+Transportation Research Part E emphasizes actionable, operations-facing implications. Using robustness slices from the locked campaign, we highlight three managerial insights that follow directly from audited sensitivity analyses.
 
 \subsection{Base-station density is an operational lever for reliability}
-Communication risk is strongly shaped by base-station density $B$. Table~\ref{tab:managerial_support} and Figure~\ref{fig:bs_delta_effect} show that densification can sharply reduce mean arc outage risk across a range of time-window tightness settings. For example, at $\Delta=10$ minutes, OR-Tools mean arc outage risk drops from approximately 0.247 at $B=4$ to 0.0768 at $B=7$ and 0.0366 at $B=10$\evid{TAB_MANAGERIAL_SUPPORT_method_ortools_main_B_4_Delta_min_10_risk_mean}\evid{TAB_MANAGERIAL_SUPPORT_method_ortools_main_B_7_Delta_min_10_risk_mean}\evid{TAB_MANAGERIAL_SUPPORT_method_ortools_main_B_10_Delta_min_10_risk_mean}. This suggests that network planning and infrastructure decisions can be as consequential as algorithm selection when reliability targets are binding.
+Communication risk is strongly shaped by base-station density $B$. Table~\ref{tab:managerial_support} and Figure~\ref{fig:bs_delta_effect} show that densification can sharply reduce mean arc outage risk across a range of time-window tightness settings. For example, at $\Delta=10$ minutes, OR-Tools mean arc outage risk drops from approximately 0.247 at $B=4$ to 0.0768 at $B=7$ and 0.0366 at $B=10$\evid{TAB_MANAGERIAL_SUPPORT_method_ortools_main_B_4_Delta_min_10_risk_mean}\evid{TAB_MANAGERIAL_SUPPORT_method_ortools_main_B_7_Delta_min_10_risk_mean}\evid{TAB_MANAGERIAL_SUPPORT_method_ortools_main_B_10_Delta_min_10_risk_mean}. Operationally, this implies that network planning and infrastructure decisions can be as consequential as algorithm selection when reliability targets are binding.
 
 \input{generated/tables/tab_managerial_support.tex}
 
@@ -15,10 +15,10 @@ Communication risk is strongly shaped by base-station density $B$. Table~\ref{ta
 \end{figure}
 
 \subsection{Hard time windows can overstate service quality by excluding failure cases}
-Hard time windows yield excellent service KPIs \emph{when feasible} (near-100\% on-time and near-zero tardiness). However, the feasibility results in Section~\ref{sec:results} show that hard feasibility can collapse as instances scale and/or time windows tighten. Operationally, this means that strict service metrics may be optimistic if they are implicitly conditioned on feasibility. Soft time windows provide a controllable alternative: they preserve feasibility while exposing the cost of lateness in a transparent, calibratable way.
+Hard time windows yield excellent service KPIs \emph{when feasible} (near-100\% on-time and near-zero tardiness). However, the feasibility results in Section~\ref{sec:results} show that strict feasibility can collapse as instances scale and/or time windows tighten. For practitioners, this means that ``perfect compliance'' metrics may be optimistic if they are implicitly conditioned on feasibility. Soft time windows provide a controllable alternative: they preserve feasibility while exposing the cost of lateness in a transparent, calibratable way.
 
-\subsection{Penalty calibration is a policy decision}
-The soft time-window penalty weight $\lambda_{TW}$ and the communication risk weight $\lambda_{out}$ should be interpreted as policy levers. Increasing $\lambda_{TW}$ shifts solutions toward improved time-window compliance at the expense of energy (and potentially altered risk exposure), as illustrated in Figure~\ref{fig:lambda_tw_tradeoff}. In practice, this supports a structured approach to SLA design: choose penalty weights to meet target on-time service levels, quantify the cost of compliance, and use infrastructure levers (e.g., base-station densification) when the risk constraint is the binding driver.
+\subsection{Penalty calibration should be treated as a policy decision}
+The soft time-window penalty $\lambda_{TW}$ and the communication-risk weight $\lambda_{out}$ should be interpreted as policy levers, not algorithmic constants. Increasing $\lambda_{TW}$ shifts solutions toward improved time-window compliance at the expense of energy (and potentially altered risk exposure), as illustrated in Figure~\ref{fig:lambda_tw_tradeoff}. In practice, this supports a structured approach to SLA design: choose penalty weights to meet target service levels, quantify the marginal cost of compliance, and use infrastructure levers (e.g., base-station densification) when reliability constraints dominate.
 
 \begin{figure}[t]
 \centering

@@ -1,18 +1,22 @@
 \label{sec:limitations}
 
-Our study is intentionally scoped to produce an operationally interpretable reliability signal and a reviewer-safe, reproducible evidence package. Several limitations point to clear research extensions.
+Our study is designed to provide a reproducible, operations-facing view of reliability-aware UAV routing under time-window pressure. Several limitations should be kept in mind when interpreting the results.
 
-\paragraph{Energy modeling granularity.}
-We use a linear energy proxy proportional to flight distance. Real multirotor energy consumption depends on payload, speed, climb/descend profiles, and aerodynamic effects \citep{dorling2017}. Future work can incorporate payload-dependent power curves and speed decisions, potentially turning the objective into a richer energy--time tradeoff.
+\paragraph{Simplified energy model.}
+We use a linear distance-based energy proxy. Real UAV power consumption depends on payload, flight dynamics, wind, speed profiles, and battery characteristics \citep{dorling2017}. A richer energy model would improve absolute realism but would complicate large-scale reproducible experimentation.
 
-\paragraph{Communication modeling scope.}
-The outage-risk model is a simplified air-to-ground abstraction based on LoS probability and excess losses \citep{alhourani2014,zeng2016}. It does not capture interference, network load, handover dynamics, or temporal fading. Nevertheless, the risk signal is nontrivial and method-dependent (Table~\ref{tab:risk_signal}), and it supports controlled sensitivity analyses over $B$, $\Delta$, and $K$.
+\paragraph{Simplified radio model.}
+The communication-risk signal is derived from a static air-to-ground pathloss abstraction and does not model network traffic, interference, handover delays, or congestion. The intent is comparative and sensitivity analysis, not prediction of absolute outage rates in a specific deployed cellular network.
 
-\paragraph{Geometric and regulatory constraints.}
-We assume straight-line travel between nodes and static base-station coordinates. Urban airspace restrictions, no-fly zones, obstacle-aware 3D routing, and safety buffers would further constrain feasible trajectories.
+\paragraph{Capacity and pickup/delivery abstraction.}
+We model mixed pickup and delivery quantities without paired pickup--delivery precedence constraints between customer nodes. Pickups are implicitly returned to the depot at route end. This abstraction is appropriate for many last-mile collection/delivery tasks but does not cover full PDPTW-style job pairing.
 
-\paragraph{Algorithmic scope.}
-We deliberately focus on a CPU-bound solver stack (OR-Tools, HiGHS, PyVRP) that supports reproducible review. Learning-based approaches (e.g., graph neural combinatorial solvers) are promising but introduce additional reproducibility and generalization challenges \citep{cappart2023}.
+\paragraph{Conservative claim regime.}
+To avoid invalid inference, we make the following non-claims explicit:
+\begin{itemize}[leftmargin=*]
+\item We claim \emph{exactness} only when HiGHS provides an optimality certificate on $N\le 10$.
+\item We report bounds and gaps only for $N\in\{20,40\}$ when both incumbent and bound are finite and compatible.
+\item We do not report or interpret bounds/gaps for $N=80$; these results are scalability-only.
+\end{itemize}
 
-\paragraph{Inference policy.}
-We adopt a conservative claim regime to avoid overstatement. In particular, $N=80$ is treated as scalability-only and we exclude bounds/gaps by policy to keep inference aligned with the available evidence.
+Future work can incorporate richer energy and network models, multi-objective tradeoff frontiers, and stochastic service times, while retaining the evidence-locking and audit mechanisms that support reviewer-grade reproducibility.

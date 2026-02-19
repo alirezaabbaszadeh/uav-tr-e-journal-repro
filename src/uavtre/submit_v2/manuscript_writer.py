@@ -148,6 +148,9 @@ def write_submission_text_artifacts(
     index_text = (
         f"# Table/Figure Index ({campaign_id})\n\n"
         "## Tables (source CSVs)\n"
+        f"- `configs/base.json` -> `manuscript_submit_v2/tr_e/generated/tables/tab_comm_params.tex`\n"
+        f"- `src/uavtre/scenario/time_windows.py` + `configs/base.json` -> `manuscript_submit_v2/tr_e/generated/tables/tab_tw_families.tex`\n"
+        f"- `outputs/campaigns/{campaign_id}/main_*_core/results_significance.csv` -> `manuscript_submit_v2/tr_e/generated/tables/tab_significance_summary.tex`\n"
         f"- `outputs/campaigns/{campaign_id}/paper_A/table_main_kpi_summary.csv` -> `manuscript_submit_v2/tr_e/generated/tables/tab_kpi_A.tex`\n"
         f"- `outputs/campaigns/{campaign_id}/paper_A/table_main_kpi_summary.csv` -> `manuscript_submit_v2/tr_e/generated/tables/tab_cost_A.tex`\n"
         f"- `outputs/campaigns/{campaign_id}/paper_B/table_main_kpi_summary.csv` -> `manuscript_submit_v2/tr_e/generated/tables/tab_kpi_B.tex`\n"
@@ -184,7 +187,7 @@ def write_submission_text_artifacts(
     meta_template = out_submission_dir / "TR_E_METADATA_TEMPLATE.yaml"
     meta = _load_simple_yaml_kv(meta_template)
 
-    title = meta.get("title", "Reliability-Aware Multi-UAV Pickup and Delivery under Communication Risk")
+    title = meta.get("title", "Reliability-Aware Multi-UAV Routing under Communication Outage Risk")
     authors = meta.get("authors", "Corresponding Author")
     affiliation = meta.get("affiliations", "")
     corresponding = meta.get("corresponding_author", authors)
@@ -204,8 +207,8 @@ def write_submission_text_artifacts(
 
     cover_text = (
         "Dear Editor,\n\n"
-        f"Please consider our manuscript entitled \"{title}\" for publication in Transportation Research Part E. "
-        "The paper addresses reliability-aware multi-UAV pickup and delivery under arc-level communication outage risk "
+        f"Please consider my manuscript entitled \"{title}\" for publication in Transportation Research Part E. "
+        "The paper addresses reliability-aware multi-UAV routing under arc-level communication outage risk "
         "and soft time windows, motivated by service-level pressures in urban last-mile operations.\n\n"
         "All reported results are locked to an audited, reproducible evidence campaign "
         f"(campaign ID: {campaign_id}). "
