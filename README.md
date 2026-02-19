@@ -133,3 +133,24 @@ docker run --rm -v "$PWD":/workspace -w /workspace uavtre:1.0.0 \
 
 ## License
 MIT (see `LICENSE`).
+
+## submit_v1 Greenfield Pipeline
+Isolated end-to-end final-submission workflow (no edits to legacy flow outputs):
+```bash
+PYTHONPATH=src ./scripts/submit_v1/run_full_submit_pipeline.sh
+```
+
+Direct CLI entrypoint:
+```bash
+python -m uavtre.submit_v1.run \
+  --campaign-id journal_v3_full_20260219_000231 \
+  --campaign-root outputs/campaigns \
+  --mode full --resume
+```
+
+submit_v1 outputs:
+- `output_submit_v1/submission/`
+- `output_submit_v1/manuscript/main.pdf`
+- `submission_submit_v1/anonymous/`
+- `submission_submit_v1/camera_ready/`
+- `outputs/pipeline_v1_runs/<run_id>/STATE.json`

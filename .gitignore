@@ -42,3 +42,18 @@ submission/anonymous/**
 !submission/anonymous/.gitkeep
 submission/camera_ready/**
 !submission/camera_ready/.gitkeep
+
+# submit_v1 runtime artifacts
+outputs/pipeline_v1_runs/
+output_submit_v1/manuscript/
+output_submit_v1/submission/*
+!output_submit_v1/submission/TR_E_METADATA_TEMPLATE.yaml
+!output_submit_v1/submission/.gitkeep
+submission_submit_v1/**
+!submission_submit_v1/.gitkeep
+
+# submit_v1 generated manuscript assets
+manuscript_submit_v1/tr_e/generated/tables/*
+!manuscript_submit_v1/tr_e/generated/tables/.gitkeep
+manuscript_submit_v1/tr_e/generated/figures/*
+!manuscript_submit_v1/tr_e/generated/figures/.gitkeep

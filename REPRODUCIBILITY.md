@@ -108,3 +108,24 @@ One-command reviewer preflight:
 - Shard partition uses deterministic index modulo.
 - Resume mode skips already-existing `(run_id, method)` rows.
 - Re-running same campaign config and seed set should reproduce benchmark instances and policy-consistent outputs (within floating-point tolerance).
+
+## 7) submit_v1 Greenfield Final-Submission Pipeline
+Run isolated final-submission pipeline (campaign-locked, resume-safe):
+```bash
+PYTHONPATH=src ./scripts/submit_v1/run_full_submit_pipeline.sh
+```
+
+Or explicitly:
+```bash
+PYTHONPATH=src .venv/bin/python -m uavtre.submit_v1.run \
+  --campaign-id journal_v3_full_20260219_000231 \
+  --campaign-root outputs/campaigns \
+  --mode full --resume
+```
+
+Outputs:
+- `output_submit_v1/submission/`
+- `output_submit_v1/manuscript/main.pdf`
+- `submission_submit_v1/anonymous/`
+- `submission_submit_v1/camera_ready/`
+- `outputs/pipeline_v1_runs/<run_id>/STATE.json`
