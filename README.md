@@ -70,6 +70,10 @@ Generated campaign-suffixed files:
 - `output/submission/next_steps_<campaign_id>.md`
 - `output/submission/TABLE_FIGURE_INDEX_<campaign_id>.md`
 - `output/submission/MANUSCRIPT_PACK_MANIFEST_<campaign_id>.json`
+- `output/submission/RELEASE_NOTE_<campaign_id>.md`
+
+Automated integrity check:
+- `scripts/check_manuscript_pack_consistency.py`
 
 ## Public CLI Interfaces
 ```bash

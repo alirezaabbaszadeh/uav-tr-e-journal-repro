@@ -43,6 +43,11 @@ fi
   --campaign-root "$CAMPAIGN_ROOT" \
   --submission-dir "$SUBMISSION_DIR"
 
+"$PYTHON_BIN" scripts/generate_release_note.py \
+  --campaign-id "$CAMPAIGN_ID" \
+  --campaign-root "$CAMPAIGN_ROOT" \
+  --submission-dir "$SUBMISSION_DIR"
+
 "$PYTHON_BIN" -m uavtre.make_review_pack \
   --mode anonymous \
   --campaign-root "$CAMPAIGN_ROOT" \
@@ -59,6 +64,7 @@ required=(
   "$SUBMISSION_DIR/next_steps_${CAMPAIGN_ID}.md"
   "$SUBMISSION_DIR/TABLE_FIGURE_INDEX_${CAMPAIGN_ID}.md"
   "$SUBMISSION_DIR/MANUSCRIPT_PACK_MANIFEST_${CAMPAIGN_ID}.json"
+  "$SUBMISSION_DIR/RELEASE_NOTE_${CAMPAIGN_ID}.md"
   "submission/anonymous/BUNDLE_MANIFEST.json"
   "submission/camera_ready/BUNDLE_MANIFEST.json"
 )
@@ -69,5 +75,11 @@ for p in "${required[@]}"; do
     exit 1
   fi
 done
+
+PYTHONPATH=src "$PYTHON_BIN" scripts/check_manuscript_pack_consistency.py \
+  --campaign-id "$CAMPAIGN_ID" \
+  --submission-dir "$SUBMISSION_DIR" \
+  --anonymous-dir "submission/anonymous" \
+  --camera-ready-dir "submission/camera_ready"
 
 echo "manuscript pack built for campaign: $CAMPAIGN_ID"

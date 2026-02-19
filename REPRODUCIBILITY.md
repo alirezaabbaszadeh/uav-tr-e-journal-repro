@@ -84,6 +84,12 @@ Generated manuscript artifacts:
 - `output/submission/next_steps_<campaign_id>.md`
 - `output/submission/TABLE_FIGURE_INDEX_<campaign_id>.md`
 - `output/submission/MANUSCRIPT_PACK_MANIFEST_<campaign_id>.json`
+- `output/submission/RELEASE_NOTE_<campaign_id>.md`
+
+Integrity validation:
+```bash
+PYTHONPATH=src .venv/bin/python scripts/check_manuscript_pack_consistency.py   --campaign-id <campaign_id>   --submission-dir output/submission   --anonymous-dir submission/anonymous   --camera-ready-dir submission/camera_ready
+```
 
 ## 6) Determinism Expectations
 - Scenario generation is seed-driven.

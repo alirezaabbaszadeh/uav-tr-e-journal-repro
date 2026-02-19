@@ -135,6 +135,7 @@ def _copy_submission_artifacts(bundle_dir: Path, campaign_id: str) -> list[str]:
         f"next_steps_{campaign_id}.md",
         f"TABLE_FIGURE_INDEX_{campaign_id}.md",
         f"MANUSCRIPT_PACK_MANIFEST_{campaign_id}.json",
+        f"RELEASE_NOTE_{campaign_id}.md",
         "build_instructions.md",
         "tr_e_presubmission_checklist.md",
         "proposal_highlights.txt",
