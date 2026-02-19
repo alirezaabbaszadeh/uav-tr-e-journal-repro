@@ -134,7 +134,11 @@ def _n_set(df: pd.DataFrame | None) -> Set[int]:
 
 def _resolve_paths(args: argparse.Namespace) -> tuple[Path, Path, Path, Path, Path | None]:
     if args.campaign_id:
-        camp = Path(args.campaign_root) / args.campaign_id
+        camp_root = Path(args.campaign_root)
+        if camp_root.name == args.campaign_id and camp_root.exists():
+            camp = camp_root
+        else:
+            camp = camp_root / args.campaign_id
         main_a = Path(args.main_a) if args.main_a else camp / "main_A_core" / "results_main.csv"
         scal_a = Path(args.scal_a) if args.scal_a else camp / "scal_A_core" / "results_main.csv"
         main_b = Path(args.main_b) if args.main_b else camp / "main_B_core" / "results_main.csv"

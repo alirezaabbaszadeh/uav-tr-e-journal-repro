@@ -1,5 +1,5 @@
 {
-  "generated_at_utc": "2026-02-19T04:55:48.805450+00:00",
+  "generated_at_utc": "2026-02-19T05:48:31.160111+00:00",
   "campaign_id": "journal_v3_full_20260219_000231",
   "campaign_root": "outputs/campaigns",
   "campaign_dir": "outputs/campaigns/journal_v3_full_20260219_000231",
@@ -97,7 +97,7 @@
     },
     {
       "path": "output/submission/MANUSCRIPT_PACK_MANIFEST_journal_v3_full_20260219_000231.json",
-      "sha256": "27320e6dd4db7d73f01380af5caf379e9d18abd74d11e055151fe9226802a6ac",
+      "sha256": "0b545bcd9abd99ff41cd15746a15ccbd790c04f202474800ed2f483bf364c405",
       "bytes": 4306
     }
   ]

@@ -75,6 +75,15 @@ Generated campaign-suffixed files:
 Automated integrity check:
 - `scripts/check_manuscript_pack_consistency.py`
 
+One-command reviewer preflight:
+```bash
+./scripts/reviewer_preflight.sh \
+  --campaign-id <campaign_id> \
+  --campaign-root outputs/campaigns \
+  --submission-dir output/submission
+```
+This runs manuscript-pack build, audit gates, consistency checks, and anonymous leak scan.
+
 ## Public CLI Interfaces
 ```bash
 python -m uavtre.run_experiments --config configs/base.json --output outputs/results_main.csv

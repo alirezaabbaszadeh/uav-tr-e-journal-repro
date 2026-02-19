@@ -88,7 +88,19 @@ Generated manuscript artifacts:
 
 Integrity validation:
 ```bash
-PYTHONPATH=src .venv/bin/python scripts/check_manuscript_pack_consistency.py   --campaign-id <campaign_id>   --submission-dir output/submission   --anonymous-dir submission/anonymous   --camera-ready-dir submission/camera_ready
+PYTHONPATH=src .venv/bin/python scripts/check_manuscript_pack_consistency.py \
+  --campaign-id <campaign_id> \
+  --submission-dir output/submission \
+  --anonymous-dir submission/anonymous \
+  --camera-ready-dir submission/camera_ready
+```
+
+One-command reviewer preflight:
+```bash
+./scripts/reviewer_preflight.sh \
+  --campaign-id <campaign_id> \
+  --campaign-root outputs/campaigns \
+  --submission-dir output/submission
 ```
 
 ## 6) Determinism Expectations
