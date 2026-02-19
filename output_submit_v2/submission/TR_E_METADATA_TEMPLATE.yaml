@@ -1,0 +1,10 @@
+title: Reliability-Aware Multi-UAV Pickup and Delivery under Communication Risk and Soft Time Windows
+running_title: Reliability-Aware Multi-UAV Logistics
+abstract: Urban UAV logistics must satisfy time-window service levels under communication uncertainty. We study a reliability-aware multi-UAV pickup-and-delivery problem with an arc-level outage-risk model and a calibrated objective combining an energy proxy, risk, and soft time-window tardiness. All evidence is locked to an audited campaign (journal_v3_full_20260219_000231) with conservative claim policy (exact with certificate for N<=10; bound-gap for N=20 and N=40; scalability-only for N=80).
+keywords: UAV logistics; pickup and delivery; VRPTW; soft time windows; communication outage risk; reproducible research
+authors: Alireza Abbaszadeh
+corresponding_author: Alireza Abbaszadeh (alireza.abbaszadeh8558@iau.ir)
+affiliations: Department of Computer Engineering, Islamic Azad University, Mashhad, Iran
+funding: No external funding.
+conflicts: The author declares no conflict of interest.
+data_code_availability: "Code and locked evidence artifacts: https://github.com/alirezaabbaszadeh/uav-tr-e-journal-repro/releases/tag/v1.3.0-journal-repro."

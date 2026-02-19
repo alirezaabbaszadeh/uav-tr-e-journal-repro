@@ -1,0 +1,132 @@
+% submit_v2 manuscript (camera-ready variant by default).
+% Evidence is campaign-locked; see generated/campaign_lock.tex.
+\documentclass[review,12pt,authoryear]{elsarticle}
+
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage{subcaption}
+\usepackage{siunitx}
+\usepackage{hyperref}
+\usepackage{cleveref}
+\usepackage{enumitem}
+
+\hypersetup{colorlinks=true,linkcolor=black,urlcolor=blue,citecolor=black}
+
+% Evidence tags are hidden by default; define \showevid to render them.
+\newcommand{\evid}[1]{\ifdefined\showevid\textsuperscript{\scriptsize [E:#1]}\fi}
+
+\newcommand{\code}[1]{\texttt{#1}}
+
+% Campaign lock macros
+\input{generated/campaign_lock.tex}
+
+\journal{Transportation Research Part E: Logistics and Transportation Review}
+
+\begin{document}
+
+\begin{frontmatter}
+
+\title{Reliability-Aware Multi-UAV Pickup and Delivery under Communication Risk and Soft Time Windows}
+
+\ifdefined\ANON
+  \author{Anonymous Author}
+  \address{}
+\else
+  \author{Alireza Abbaszadeh\corref{cor1}}
+  \ead{alireza.abbaszadeh8558@iau.ir}
+  \cortext[cor1]{Corresponding author.}
+  \address{Department of Computer Engineering, Islamic Azad University, Mashhad, Iran}
+\fi
+
+\begin{abstract}
+\input{sections/abstract.tex}
+\end{abstract}
+
+\begin{keyword}
+UAV logistics \sep VRPTW \sep pickup and delivery \sep communication outage risk \sep soft time windows \sep reproducible research
+\end{keyword}
+
+\end{frontmatter}
+
+\section{Introduction}
+\input{sections/introduction.tex}
+
+\section{Related Work}
+\input{sections/related_work.tex}
+
+\section{Problem Setting and Assumptions}
+\input{sections/problem.tex}
+
+\section{Mathematical Formulation}
+\input{sections/formulation.tex}
+
+\section{Communication-Risk Modeling}
+\input{sections/risk_model.tex}
+
+\section{Solution Methodology}
+\input{sections/methods.tex}
+
+\section{Experimental Design}
+\input{sections/experiments.tex}
+
+\section{Results and Discussion}
+\input{sections/results.tex}
+
+\section{Managerial Insights}
+\input{sections/insights.tex}
+
+\section{Limitations and Future Work}
+\input{sections/limitations.tex}
+
+\section{Conclusion}
+\input{sections/conclusion.tex}
+
+\section*{Data and Code Availability}
+\input{sections/reproducibility.tex}
+
+\appendix
+\section{Generated Tables}
+\input{generated/tables/tab_kpi_A.tex}
+\input{generated/tables/tab_kpi_B.tex}
+\input{generated/tables/tab_gap_A.tex}
+\input{generated/tables/tab_gap_B.tex}
+\input{generated/tables/tab_feas_A.tex}
+\input{generated/tables/tab_feas_B.tex}
+\input{generated/tables/tab_scalability_summary.tex}
+\input{generated/tables/tab_managerial_support.tex}
+\input{generated/tables/tab_risk_signal.tex}
+
+\section{Generated Figures}
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.85\linewidth]{generated/figures/fig_scenario_overview.pdf}
+\caption{Example audited scenario (depot, clients, base stations) and one OR-Tools route.}
+\label{fig:scenario_overview}
+\end{figure}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.92\linewidth]{generated/figures/fig_bs_delta_effect.pdf}
+\caption{Base-station density and time-window tightness jointly shape arc outage risk.}
+\label{fig:bs_delta_effect}
+\end{figure}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.92\linewidth]{generated/figures/fig_tradeoff_lambda_tw.pdf}
+\caption{Soft time-window penalty weight induces an energy--service tradeoff.}
+\label{fig:lambda_tw_tradeoff}
+\end{figure}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.92\linewidth]{generated/figures/fig_scalability_summary.pdf}
+\caption{Scalability-only characterization at $N=80$ (no bounds/gaps by policy).}
+\label{fig:scalability_summary}
+\end{figure}
+
+\bibliographystyle{elsarticle-harv}
+\bibliography{references}
+
+\end{document}

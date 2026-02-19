@@ -19,6 +19,7 @@ dependencies = [
   "highspy>=1.8",
   "ortools>=9.10",
   "pyvrp>=0.9",
+  "matplotlib>=3.9",
   "pytest>=8.3"
 ]
 

@@ -1,15 +1,19 @@
 cff-version: 1.2.0
 message: "If you use this repository, please cite the software package and related article."
-title: "uav_tr_e_project"
-version: "1.0.0"
+title: "Reliability-Aware Multi-UAV Pickup and Delivery under Communication Risk and Soft Time Windows"
+version: "v1.3.0-journal-repro"
 type: software
 authors:
-  - family-names: "Project"
-    given-names: "UAV TR-E"
-repository-code: "https://github.com/anonymous/uav_tr_e_project"
+  - family-names: "Abbaszadeh"
+    given-names: "Alireza"
+    email: "alireza.abbaszadeh8558@iau.ir"
+    affiliation: "Department of Computer Engineering, Islamic Azad University, Mashhad, Iran"
+repository-code: "https://github.com/alirezaabbaszadeh/uav-tr-e-journal-repro"
 license: "MIT"
 keywords:
   - UAV logistics
+  - pickup and delivery
   - VRPTW
-  - reliability-aware optimization
+  - communication outage risk
+  - soft time windows
   - reproducible research

@@ -1,0 +1,12 @@
+All manuscript tables and figures are generated from a single locked evidence campaign (\code{\CampaignID}). The campaign directory contains manifests (campaign manifest, run plan, environment snapshot, and command log), frozen benchmark instances, and aggregated result tables.
+
+The companion repository provides:
+\begin{itemize}[leftmargin=*]
+\item deterministic scripts to regenerate paper tables/figures from campaign outputs,
+\item an evidence index and claim guard that validate claim-to-evidence bindings, and
+\item anonymous and camera-ready reviewer bundles.
+\end{itemize}
+
+A minimal reproduction path is: (i) obtain the repository release, (ii) run the submit pipeline for \code{\CampaignID}, and (iii) verify the generated TR-E upload pack checksums.
+
+We follow the principles of reproducible computational research as advocated in \citet{peng2011,stodden2016}.

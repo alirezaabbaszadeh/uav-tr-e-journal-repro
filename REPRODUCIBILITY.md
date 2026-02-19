@@ -129,3 +129,19 @@ Outputs:
 - `submission_submit_v1/anonymous/`
 - `submission_submit_v1/camera_ready/`
 - `outputs/pipeline_v1_runs/<run_id>/STATE.json`
+
+## 8) submit_v2 Journal-Grade Manuscript + TR-E Upload Pack
+submit_v2 builds an Elsevier-style manuscript from one locked campaign and generates a TR-E upload pack zip.
+
+Run end-to-end:
+```bash
+PYTHONPATH=src ./scripts/submit_v2/run_full_submit_pipeline.sh journal_v3_full_20260219_000231
+```
+
+Key outputs:
+- `output_submit_v2/submission/TR_E_UPLOAD_PACK_<campaign_id>.zip`
+- `output_submit_v2/manuscript/anonymous/main.pdf`
+- `output_submit_v2/manuscript/camera_ready/main.pdf`
+
+Note: `output_submit_v2/submission/TR_E_METADATA_TEMPLATE.yaml` should be edited before portal submission.
+

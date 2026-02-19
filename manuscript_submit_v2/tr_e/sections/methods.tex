@@ -1,0 +1,17 @@
+\label{sec:methods}
+
+We adopt a solver stack designed to (i) provide strong feasible solutions at scale, (ii) provide exact/bound evidence on small/medium instances, and (iii) remain reproducible under strict runtime budgets.
+
+\subsection{Main heuristic: OR-Tools with soft time windows}
+Our main engine is based on Google OR-Tools routing solvers \citep{ortools}. The implementation uses a standard VRP routing model with multiple vehicles, time dimensions for service timing, and a load dimension for capacity propagation.
+
+Soft time windows are implemented by allowing service start times to exceed $b_i$ and charging a linear penalty on tardiness. This is consistent with the soft-TW objective component $\gamma\sum z_{ik}$ in \Cref{eq:obj}. The penalty weight is set by $\lambda_{TW}$ and is varied in robustness experiments.
+
+\subsection{Exact/bound engine: HiGHS MIP with certificate gating}
+For small problem sizes, we solve the MIP formulation with HiGHS \citep{highs}. We report an \emph{exact} label only when HiGHS returns an optimality certificate. Otherwise, we treat the incumbent as a heuristic solution and report bounds/gaps only when the dual bound is finite and compatible with the incumbent objective.
+
+\subsection{Baseline: PyVRP}
+We include PyVRP as a baseline metaheuristic solver \citep{pyvrp}. PyVRP provides a competitive hard-TW routing baseline but may fail to return feasible solutions under tight time windows or at larger instance sizes. This failure mode is informative from an operational standpoint: strict feasibility constraints can render optimization brittle, motivating soft-TW policies.
+
+\subsection{Claim-safe reporting by size}
+We enforce a conservative inference policy by instance size (Section~\ref{sec:formulation}). In particular, results at $N=80$ are reported as scalability-only: we do not claim bounds/gaps at that scale even if a bound exists in principle, because the evidence campaign is designed to preserve reviewer-safe inference.

@@ -1,0 +1,16 @@
+Unmanned aerial vehicles (UAVs) are increasingly considered for time-sensitive urban pickup-and-delivery operations, complementing or partially replacing ground fleets in the last mile. In realistic deployments, however, route plans must be robust not only to operational constraints such as time windows and vehicle capacity, but also to communication reliability: command-and-control and telemetry links may experience coverage holes and outages caused by air-to-ground propagation and base-station geometry \citep{alhourani2014,zeng2016}.
+
+From an operations perspective, communication outages are not merely a networking detail; they manifest as operational risk that can degrade service quality, induce safety-driven rerouting, and reduce the effective capacity of a UAV fleet. At the same time, enforcing strict (hard) time windows can cause infeasibility or brittle plans when system conditions change, motivating soft time-window formulations that explicitly trade off lateness against other objectives \citep{solomon1987,ropke2006}.
+
+This paper targets Transportation Research Part E by framing communication risk as an operational reliability attribute within a multi-UAV pickup-and-delivery setting. We integrate a simple, physically motivated arc-level outage-risk model into the routing objective and evaluate the resulting tradeoffs under controlled scenario families that stress time-window tightness.
+
+\subsection*{Contributions}
+We make four contributions:
+\begin{itemize}[leftmargin=*]
+\item \textbf{Reliability-aware objective:} We define an arc cost that combines an energy proxy and an arc-level communication outage risk, and we penalize time-window violations via soft time windows, enabling explicit energy--risk--service tradeoffs.
+\item \textbf{Risk modeling at the route level:} We compute arc outage risk by sampling along each edge and evaluating air-to-ground pathloss and SNR relative to a base-station set, leveraging standard LoS probability and pathloss components \citep{alhourani2014}.
+\item \textbf{Solver stack with conservative inference:} We use OR-Tools as the main heuristic engine, HiGHS as an exact/bound engine for small/medium sizes, and PyVRP as a baseline. We enforce a conservative claim regime by instance size (exact-with-certificate, bound-gap, scalability-only) to prevent invalid inference on large instances \citep{highs,ortools,pyvrp}.
+\item \textbf{Journal-grade reproducibility:} All reported results are locked to an audited campaign (\code{\CampaignID}) with manifests, an evidence index, machine-checked claim guarding, and reviewer bundles.
+\end{itemize}
+
+The remainder of the paper reviews related work (Section~\ref{sec:related_work}), defines the problem and assumptions (Section~\ref{sec:problem}), presents the formulation and risk model (Sections~\ref{sec:formulation}--\ref{sec:risk_model}), describes the solution approach (Section~\ref{sec:methods}), and reports results and managerial insights (Sections~\ref{sec:results}--\ref{sec:insights}).

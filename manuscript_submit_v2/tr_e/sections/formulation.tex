@@ -1,0 +1,102 @@
+\label{sec:formulation}
+
+We present a mixed-integer formulation that matches the exact/bound engine used in our evidence campaign. Let $\mathcal{V}=\{0,1,\dots,N\}$ denote nodes, where $0$ is the depot and $\mathcal{C}=\mathcal{V}\setminus\{0\}$ are customers. Let $\mathcal{K}=\{1,\dots,M\}$ denote UAVs.
+
+\subsection{Parameters}
+For each customer $i\in\mathcal{C}$: time window $[a_i,b_i]$, service duration $s_i$, pickup $p_i$ and delivery $d_i$. Capacity is $Q$. For each arc $(i,j)$ we have travel time $\tau_{ij}$, an energy proxy $E_{ij}$, and an arc outage-risk estimate $R_{ij}$ (Section~\ref{sec:risk_model}).
+
+We define an arc cost
+\begin{equation}
+  c_{ij} = \alpha\,E_{ij} + \beta\,R_{ij},
+\end{equation}
+where $(\alpha,\beta)$ are scaling coefficients induced by \code{cost\_scale}, \code{lambda\_out}, and \code{risk\_scale} in the implementation.
+
+\subsection{Decision variables}
+We use the following variables:
+\begin{itemize}[leftmargin=*]
+\item $x_{ijk}\in\{0,1\}$: UAV $k$ traverses arc $i\to j$.
+\item $y_{ik}\in\{0,1\}$: UAV $k$ serves customer $i$.
+\item $u_k\in\{0,1\}$: UAV $k$ is activated.
+\item $t_{ik}\ge 0$: service start time at node $i$ by UAV $k$.
+\item $\ell_{ik}\in[0,Q]$: vehicle load after visiting node $i$.
+\item $z_{ik}\ge 0$: tardiness slack at customer $i$ (soft time windows).
+\end{itemize}
+
+\subsection{Objective}
+We minimize travel-related cost plus tardiness penalties:
+\begin{align}
+  \min\quad & \sum_{k\in\mathcal{K}}\sum_{i\in\mathcal{V}}\sum_{j\in\mathcal{V}\setminus\{i\}} c_{ij} x_{ijk} 
+  + \gamma\sum_{k\in\mathcal{K}}\sum_{i\in\mathcal{C}} z_{ik},
+  \label{eq:obj}
+\end{align}
+where $\gamma$ corresponds to the soft-TW penalty coefficient (mapped from \code{lambda\_tw}).
+
+\subsection{Core constraints}
+\paragraph{Visit exactly once.}
+Each customer is assigned to exactly one UAV:
+\begin{align}
+  \sum_{k\in\mathcal{K}} y_{ik} &= 1, && \forall i\in\mathcal{C}.
+  \label{eq:visit_once}
+\end{align}
+
+\paragraph{Flow conservation.}
+For each UAV, in- and out-flow at customers matches the assignment:
+\begin{align}
+  \sum_{j\in\mathcal{V}\setminus\{i\}} x_{ijk} &= y_{ik}, && \forall i\in\mathcal{C},\ \forall k\in\mathcal{K}, 
+  \label{eq:flow_out}\\
+  \sum_{j\in\mathcal{V}\setminus\{i\}} x_{jik} &= y_{ik}, && \forall i\in\mathcal{C},\ \forall k\in\mathcal{K}.
+  \label{eq:flow_in}
+\end{align}
+At the depot, flow equals UAV activation:
+\begin{align}
+  \sum_{j\in\mathcal{C}} x_{0jk} &= u_k, && \forall k\in\mathcal{K}, 
+  \label{eq:depot_out}\\
+  \sum_{i\in\mathcal{C}} x_{i0k} &= u_k, && \forall k\in\mathcal{K}.
+  \label{eq:depot_in}
+\end{align}
+
+\paragraph{Time propagation and time windows.}
+Let $M_T$ be a sufficiently large constant. Time propagation is enforced by
+\begin{align}
+  t_{jk} \ge t_{ik} + s_i + \tau_{ij} - M_T (1-x_{ijk}),
+  && \forall i\in\mathcal{V},\ \forall j\in\mathcal{C},\ \forall k\in\mathcal{K}.
+  \label{eq:time_prop}
+\end{align}
+Lower bounds enforce earliest start when a customer is served:
+\begin{align}
+  t_{ik} \ge a_i - M_T (1-y_{ik}), && \forall i\in\mathcal{C},\ \forall k\in\mathcal{K}.
+  \label{eq:tw_early}
+\end{align}
+For soft time windows, tardiness slack $z_{ik}$ relaxes the latest-start constraint:
+\begin{align}
+  t_{ik} - z_{ik} \le b_i + M_T (1-y_{ik}), && \forall i\in\mathcal{C},\ \forall k\in\mathcal{K}.
+  \label{eq:tw_soft}
+\end{align}
+Hard time windows are obtained by removing $z_{ik}$ (or equivalently setting $z_{ik}=0$).
+
+\paragraph{Capacity propagation.}
+Let $M_L$ be a sufficiently large constant. We enforce initial load consistency
+\begin{align}
+  \ell_{0k} = \sum_{i\in\mathcal{C}} d_i y_{ik}, && \forall k\in\mathcal{K},
+\end{align}
+and capacity at customers
+\begin{align}
+  0 \le \ell_{ik} \le Q y_{ik}, && \forall i\in\mathcal{C},\ \forall k\in\mathcal{K}.
+\end{align}
+Load propagation across arcs is enforced with big-$M$ constraints:
+\begin{align}
+  \ell_{jk} \ge \ell_{ik} - d_j + p_j - M_L (1-x_{ijk}),
+  && \forall i\in\mathcal{V},\ \forall j\in\mathcal{C},\ \forall k\in\mathcal{K},
+  \label{eq:load_prop_lb}\\
+  \ell_{jk} \le \ell_{ik} - d_j + p_j + M_L (1-x_{ijk}),
+  && \forall i\in\mathcal{V},\ \forall j\in\mathcal{C},\ \forall k\in\mathcal{K}.
+  \label{eq:load_prop_ub}
+\end{align}
+
+\subsection{Claim regime and gap reporting}
+To ensure scientifically valid inference, we adopt a conservative reporting policy by size:
+\begin{itemize}[leftmargin=*]
+\item $N\le 10$: results may be labeled \emph{exact} only when the MIP solver provides an optimality certificate.
+\item $N\in\{20,40\}$: we report incumbent objective values and best available bounds when available, and compute a bound-gap only when both are finite.
+\item $N=80$: we report scalability-only metrics (runtime/feasibility and KPI summaries) and explicitly exclude any bound or gap claims.
+\end{itemize}

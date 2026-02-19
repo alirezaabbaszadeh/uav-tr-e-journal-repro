@@ -1,0 +1,22 @@
+\label{sec:problem}
+
+We consider an urban service region with one depot and $N$ customer locations to be served by a homogeneous fleet of $M$ UAVs. Each customer $i$ requires a service duration $s_i$ and is associated with a time window $[a_i,b_i]$ in seconds. Each UAV operates at a fixed altitude $h$ with a constant cruise speed $v$.
+
+\paragraph{Pickup-and-delivery with capacity propagation.}
+Each customer induces a pickup amount $p_i$ and a delivery amount $d_i$ (in kg). UAV payload capacity is $Q$ (kg). Along a route, vehicle load evolves based on deliveries and pickups; we enforce capacity propagation as in pickup-and-delivery routing \citep{parragh2008,ropke2006}.
+
+\paragraph{Travel time and energy proxy.}
+Let $\tau_{ij}$ denote travel time between nodes $i$ and $j$ (including the depot). Distances are Euclidean in the benchmark instances, and energy is modeled as a linear proxy of distance via an energy-per-meter coefficient \citep{dorling2017}. While simplistic, this proxy is sufficient to expose energy--service--risk tradeoffs.
+
+\paragraph{Communication environment and risk.}
+A set of $B$ base stations (BSs) with known planar coordinates is given. For any point along a flight segment, a UAV is assumed to connect to the BS that maximizes SNR. We define an outage event when the best SNR falls below a threshold; arc-level outage risk is estimated by sampling points along each edge (Section~\ref{sec:risk_model}).
+
+\paragraph{Time-window families A and B.}
+To study robustness under service stress, we define two time-window families:
+\begin{itemize}[leftmargin=*]
+\item \textbf{Family A (baseline):} time windows are generated around baseline service times with a minimum width parameter $\Delta$.
+\item \textbf{Family B (stress):} time windows are tightened and shifted to induce higher tardiness pressure while preserving comparability.
+\end{itemize}
+
+\paragraph{Soft vs hard time windows.}
+Hard time windows require $a_i \le t_i \le b_i$ for service start times $t_i$, and can lead to infeasibility at scale. We therefore focus on soft time windows, where late service is allowed but penalized. A hard-TW baseline is retained for comparison.

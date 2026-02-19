@@ -57,3 +57,18 @@ manuscript_submit_v1/tr_e/generated/tables/*
 !manuscript_submit_v1/tr_e/generated/tables/.gitkeep
 manuscript_submit_v1/tr_e/generated/figures/*
 !manuscript_submit_v1/tr_e/generated/figures/.gitkeep
+
+# submit_v2 runtime artifacts
+outputs/pipeline_v2_runs/
+output_submit_v2/manuscript/
+output_submit_v2/submission/*
+!output_submit_v2/submission/TR_E_METADATA_TEMPLATE.yaml
+!output_submit_v2/submission/.gitkeep
+submission_submit_v2/**
+!submission_submit_v2/.gitkeep
+
+# submit_v2 generated manuscript assets
+manuscript_submit_v2/tr_e/generated/tables/*
+!manuscript_submit_v2/tr_e/generated/tables/.gitkeep
+manuscript_submit_v2/tr_e/generated/figures/*
+!manuscript_submit_v2/tr_e/generated/figures/.gitkeep

@@ -154,3 +154,26 @@ submit_v1 outputs:
 - `submission_submit_v1/anonymous/`
 - `submission_submit_v1/camera_ready/`
 - `outputs/pipeline_v1_runs/<run_id>/STATE.json`
+
+## submit_v2 Greenfield Pipeline (Journal-Grade Manuscript + TR-E Upload Pack)
+submit_v2 upgrades the manuscript to an Elsevier/TR-E-style LaTeX document with real tables/figures (no placeholders),
+validated evidence tags (\evid{...}), and campaign-scoped reviewer bundles.
+
+Run end-to-end (campaign-locked, no rerun):
+```bash
+PYTHONPATH=src ./scripts/submit_v2/run_full_submit_pipeline.sh journal_v3_full_20260219_000231
+```
+
+Direct CLI entrypoint:
+```bash
+PYTHONPATH=src .venv/bin/python -m uavtre.submit_v2.run   --campaign-id journal_v3_full_20260219_000231   --campaign-root outputs/campaigns   --mode full --resume
+```
+
+submit_v2 outputs:
+- `output_submit_v2/submission/`
+- `output_submit_v2/manuscript/anonymous/main.pdf`
+- `output_submit_v2/manuscript/camera_ready/main.pdf`
+- `submission_submit_v2/anonymous/`
+- `submission_submit_v2/camera_ready/`
+- `outputs/pipeline_v2_runs/<run_id>/STATE.json`
+

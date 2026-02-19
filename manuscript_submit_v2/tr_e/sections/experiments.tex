@@ -1,0 +1,38 @@
+\label{sec:experiments}
+
+All results are locked to the audited campaign \code{\CampaignID}. The campaign is executed under WSL2 on a CPU-sharded setup (12 logical shards) because the core solvers (OR-Tools, HiGHS, PyVRP) are CPU-bound and do not benefit materially from GPU acceleration.
+
+\subsection{Scenario matrix}
+We evaluate two time-window families (A baseline and B stress) and vary:
+\begin{itemize}[leftmargin=*]
+\item Problem size $N\in\{10,20,40\}$ for the main-table regime, and $N=80$ for scalability-only characterization.
+\item Base-station density $B\in\{4,7\}$ in the core stage, and $B\in\{4,7,10\}$ in robustness stages.
+\item Minimum time-window width $\Delta\in\{10,5\}$ in core and $\Delta\in\{5,2\}$ in robustness.
+\item Risk weight $\lambda_{out}$ (core: $\{0.5,1.0\}$; robustness includes $0.0$).
+\item Soft time-window weight $\lambda_{TW}$ (core: $1.0$; robustness includes $0.0$ and $5.0$).
+\item Risk sampling resolution $K$ (core: $10$; sensitivity stage includes $\{5,10,20\}$).
+\end{itemize}
+
+The full run plan (including shard commands, config overrides, and frozen benchmark instances) is recorded in the campaign manifests and command log.
+
+\subsection{Baselines and fairness}
+We compare three methods:
+\begin{itemize}[leftmargin=*]
+\item \textbf{OR-Tools} as the main heuristic with soft time windows.
+\item \textbf{HiGHS} as an exact/bound engine for small/medium sizes.
+\item \textbf{PyVRP} as a baseline metaheuristic, retaining hard-TW behavior as a contrasting operational policy.
+\end{itemize}
+
+To ensure comparability, we apply per-instance time limits to solvers (heuristics typically 30 seconds; HiGHS bounded by 30--45 seconds depending on size). For $N=80$, we do not attempt bound/gap evidence and report scalability-only metrics.
+
+\subsection{Metrics}
+For each solved instance we record:
+\begin{itemize}[leftmargin=*]
+\item \textbf{Service quality:} on-time rate (percentage of customers with zero tardiness) and total tardiness (minutes).
+\item \textbf{Operational cost proxies:} total energy proxy (distance-scaled) and communication risk (mean arc outage risk; and a max-route-risk summary).
+\item \textbf{Compute:} edge-risk preprocessing time, solve time, and total runtime.
+\item \textbf{Bound-gap evidence:} incumbent objective, best available bound, and a sanitized nonnegative gap (only in the bound-gap regime).
+\end{itemize}
+
+\subsection{Statistical protocol}
+We use paired comparisons via the Wilcoxon signed-rank test \citep{wilcoxon1945} across matched scenario keys, with Holm-Bonferroni correction for multiple testing \citep{holm1979}. We report effect direction, a rank-biserial effect size, and bootstrap confidence intervals for median differences \citep{efron1993,kerby2014}.

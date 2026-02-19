@@ -1,0 +1,16 @@
+\label{sec:related_work}
+
+\subsection{Vehicle routing with time windows and pickup-and-delivery}
+The vehicle routing problem with time windows (VRPTW) is a core model for time-sensitive distribution and has been extensively studied in operations research \citep{dantzig1959,laporte2009,solomon1987,desrochers1992,tothvigo2014}. Pickup-and-delivery variants introduce coupling between pickup and delivery quantities and capacity propagation, often increasing combinatorial difficulty \citep{parragh2008,ropke2006}. Modern high-performing heuristics include tabu search, local search, and large-neighborhood search families \citep{savelsbergh1985,gendreau1994,ropke2006,vidal2014}.
+
+Soft time windows (STW) allow controlled violations via penalty terms and are widely used when strict feasibility is unrealistic or undesirable (e.g., stochastic operations, congestion, or heterogeneous service targets). STW models are particularly relevant for UAV logistics, where weather, airspace constraints, and safety-driven contingencies can induce unavoidable delays \citep{cordeau2002,ropke2006}.
+
+\subsection{UAV logistics routing and energy-aware planning}
+Routing models that combine ground vehicles and drones (e.g., truck-and-drone problems) and pure UAV delivery variants have received significant attention in the last decade \citep{murray2015,poikonen2017,agatz2018,otto2018}. Energy consumption is a central concern: multirotor UAV endurance is limited and depends on flight distance, payload, and speed \citep{dorling2017}. Many contributions focus on integrating these physical constraints into routing and scheduling decisions, including heterogeneous teams and synchronized UAV routing \citep{mathew2015,poikonen2017}.
+
+Our work uses an energy proxy consistent with route length and incorporates capacity propagation and service durations. The novelty is not a new UAV energy model, but rather a reliability-aware objective and an audited, claim-safe evidence protocol suitable for journal review.
+
+\subsection{Communication-aware UAV operations and outage risk}
+Air-to-ground communications for UAVs are governed by geometry-dependent LoS probability, pathloss, and interference. Standard models combine a LoS probability term with separate excess losses for LoS/NLoS links \citep{alhourani2014,zeng2016,mozaffari2016}. These models have been used to optimize UAV altitude, placement, and coverage in wireless networking contexts.
+
+Communication-aware routing in logistics settings has been less explored compared to pure networking optimization. We bridge this gap by mapping communication outage probability to an operational risk metric at the arc level, enabling route planning to internalize coverage quality via base-station density and SNR thresholds.
