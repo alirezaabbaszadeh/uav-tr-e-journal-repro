@@ -20,7 +20,26 @@ def parse_args() -> argparse.Namespace:
         choices=["anonymous", "camera_ready"],
         help="Bundle type.",
     )
+    parser.add_argument(
+        "--campaign-root",
+        type=str,
+        default="outputs/campaigns",
+        help="Root directory containing campaign folders.",
+    )
+    parser.add_argument(
+        "--campaign-id",
+        type=str,
+        default=None,
+        help="If set, package only artifacts from this campaign.",
+    )
     return parser.parse_args()
+
+
+def _resolve_rooted(path_like: str | Path) -> Path:
+    path = Path(path_like)
+    if path.is_absolute():
+        return path
+    return ROOT / path
 
 
 def _copy_file(src: Path, dst: Path) -> None:
@@ -96,6 +115,83 @@ def _write_camera_ready_metadata(bundle_dir: Path) -> None:
         _copy_file(src_citation, bundle_dir / "CITATION.cff")
 
 
+def _copy_submission_artifacts(bundle_dir: Path, campaign_id: str) -> list[str]:
+    src_submission = ROOT / "output" / "submission"
+    dst_submission = bundle_dir / "output" / "submission"
+    copied: list[str] = []
+    if not src_submission.exists():
+        return copied
+
+    candidates = [
+        f"claim_evidence_map_{campaign_id}.md",
+        f"results_discussion_draft_{campaign_id}.md",
+        f"next_steps_{campaign_id}.md",
+        f"TABLE_FIGURE_INDEX_{campaign_id}.md",
+        f"MANUSCRIPT_PACK_MANIFEST_{campaign_id}.json",
+        "build_instructions.md",
+        "tr_e_presubmission_checklist.md",
+        "proposal_highlights.txt",
+        "cover_letter_draft.txt",
+    ]
+
+    for name in candidates:
+        src = src_submission / name
+        if src.exists():
+            dst = dst_submission / name
+            _copy_file(src, dst)
+            copied.append(str(dst.relative_to(bundle_dir)))
+
+    return copied
+
+
+def _copy_campaign_artifacts(
+    bundle_dir: Path,
+    campaign_dir: Path,
+    campaign_id: str,
+    include_logs: bool,
+) -> dict:
+    dst_campaign = bundle_dir / "outputs" / "campaigns" / campaign_id
+    _copy_tree(campaign_dir, dst_campaign)
+
+    if not include_logs:
+        shutil.rmtree(dst_campaign / "logs", ignore_errors=True)
+
+    bench_src = campaign_dir / "benchmarks"
+    if bench_src.exists():
+        _copy_tree(bench_src, bundle_dir / "benchmarks")
+
+    copied_submission = _copy_submission_artifacts(bundle_dir, campaign_id)
+
+    source_manifest = campaign_dir / "CAMPAIGN_MANIFEST.json"
+    source_run_plan = campaign_dir / "RUN_PLAN.json"
+    source_env = campaign_dir / "ENV_SNAPSHOT.json"
+    source_cmd = campaign_dir / "COMMAND_LOG.csv"
+
+    manifest = {
+        "generated_at_utc": datetime.now(timezone.utc).isoformat(),
+        "campaign_id": campaign_id,
+        "campaign_source": str(campaign_dir),
+        "campaign_source_files": {
+            "CAMPAIGN_MANIFEST.json": source_manifest.exists(),
+            "RUN_PLAN.json": source_run_plan.exists(),
+            "ENV_SNAPSHOT.json": source_env.exists(),
+            "COMMAND_LOG.csv": source_cmd.exists(),
+        },
+        "include_logs": int(include_logs),
+        "campaign_files_json": len(list(campaign_dir.rglob("*.json"))),
+        "campaign_files_csv": len(list(campaign_dir.rglob("*.csv"))),
+        "bundle_campaign_json": len(list(dst_campaign.rglob("*.json"))),
+        "bundle_campaign_csv": len(list(dst_campaign.rglob("*.csv"))),
+        "submission_artifacts": copied_submission,
+        "submission_artifact_count": len(copied_submission),
+    }
+    (bundle_dir / "BUNDLE_MANIFEST.json").write_text(
+        json.dumps(manifest, indent=2),
+        encoding="utf-8",
+    )
+    return manifest
+
+
 def _copy_best_available_artifacts(bundle_dir: Path) -> dict:
     src_bench = ROOT / "benchmarks" / "frozen"
     dst_bench = bundle_dir / "benchmarks" / "frozen"
@@ -144,7 +240,6 @@ def _copy_best_available_artifacts(bundle_dir: Path) -> dict:
             _copy_tree(src, dst_out / name)
             copied_out_dirs.append(name)
 
-    # Always include lightweight root CSVs if present.
     for csv_name in ["results_main.csv", "results_routes.csv", "results_significance.csv"]:
         _copy_file(src_out / csv_name, dst_out / csv_name)
 
@@ -162,7 +257,7 @@ def _copy_best_available_artifacts(bundle_dir: Path) -> dict:
     return manifest
 
 
-def build_bundle(mode: str) -> Path:
+def build_bundle(mode: str, campaign_root: str | Path, campaign_id: str | None) -> Path:
     bundle_dir = ROOT / "submission" / mode
     if bundle_dir.exists():
         shutil.rmtree(bundle_dir)
@@ -195,7 +290,19 @@ def build_bundle(mode: str) -> Path:
     for dir_name in common_dirs:
         _copy_tree(ROOT / dir_name, bundle_dir / dir_name)
 
-    _copy_best_available_artifacts(bundle_dir)
+    if campaign_id:
+        campaign_root_resolved = _resolve_rooted(campaign_root)
+        campaign_dir = campaign_root_resolved / campaign_id
+        if not campaign_dir.exists():
+            raise FileNotFoundError(f"campaign directory not found: {campaign_dir}")
+        _copy_campaign_artifacts(
+            bundle_dir,
+            campaign_dir,
+            campaign_id,
+            include_logs=(mode != "anonymous"),
+        )
+    else:
+        _copy_best_available_artifacts(bundle_dir)
 
     if mode == "anonymous":
         _write_anonymous_metadata(bundle_dir)
@@ -207,7 +314,7 @@ def build_bundle(mode: str) -> Path:
 
 def main() -> None:
     args = parse_args()
-    build_bundle(args.mode)
+    build_bundle(args.mode, campaign_root=args.campaign_root, campaign_id=args.campaign_id)
 
 
 if __name__ == "__main__":

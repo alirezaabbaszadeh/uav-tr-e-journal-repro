@@ -1,5 +1,5 @@
-Family-B soft windows cut OR-Tools on-time at N=20 from 63.75% to 28.75%.
-OR-Tools stays feasible at N=40; PyVRP is infeasible at N=40.
-At N=20, OR-Tools gap is 7.74-8.03% vs PyVRP 15.23-16.88%.
-N=80 is reported as scalability-only, with no bound/gap claims.
-Reproducibility audit passed 18/18 gates with frozen benchmarks.
+A/B full campaign evidence is locked to one reproducible campaign id.
+C1-C6 claims are mapped to exact tables, metrics, and commands.
+Statistical statements include Holm-adjusted p, effect size, CI, n-pairs.
+Scalability N=80 remains policy-safe: operational only, no bound/gap.
+Anonymous/camera-ready bundles are rebuilt from campaign-scoped inputs.

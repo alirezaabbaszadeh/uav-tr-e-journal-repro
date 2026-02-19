@@ -1,6 +1,6 @@
 # Build Instructions
 
-## Python (venv)
+## 1) Environment bootstrap
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
@@ -8,30 +8,32 @@ pip install -r requirements-lock.txt
 pip install -e .
 ```
 
-## Quick Sanity Run
+## 2) Run/refresh full campaign (CPU-sharded, 12 shards)
 ```bash
-PYTHONPATH=src .venv/bin/python -m uavtre.run_experiments   --config configs/base.json   --profile quick   --output outputs/results_main.csv   --max-cases 1
+CAMPAIGN_ID=journal_v3_full_20260219_000231 NUM_SHARDS=12 MAX_CASES=0 \
+RUN_STAGE1_CORE=1 RUN_STAGE2_ROBUST=1 \
+PYTHONPATH=src ./scripts/run_journal_v3_robust.sh
 ```
 
-## Journal-Core Campaign (A/B)
+## 3) Run campaign readiness audit
 ```bash
-PYTHONPATH=src .venv/bin/python -m uavtre.run_benchmarks   --config configs/base.json   --profile main_table   --profile-override configs/overrides/main_table_journal_core_A.json   --output outputs/main_table_v2_core/results_main.csv   --benchmark-dir benchmarks/frozen/main_table_v2_core
-
-PYTHONPATH=src .venv/bin/python -m uavtre.run_benchmarks   --config configs/base.json   --profile scalability   --profile-override configs/overrides/scalability_journal_core_A.json   --output outputs/scalability_v2_core/results_main.csv   --benchmark-dir benchmarks/frozen/scalability_v2_core
-
-PYTHONPATH=src .venv/bin/python -m uavtre.run_benchmarks   --config configs/base.json   --profile main_table   --profile-override configs/overrides/main_table_journal_core_B.json   --output outputs/main_table_v2_core_B/results_main.csv   --benchmark-dir benchmarks/frozen/main_table_v2_core_B
-
-PYTHONPATH=src .venv/bin/python -m uavtre.run_benchmarks   --config configs/base.json   --profile scalability   --profile-override configs/overrides/scalability_journal_core_B.json   --output outputs/scalability_v2_core_B/results_main.csv   --benchmark-dir benchmarks/frozen/scalability_v2_core_B
+PYTHONPATH=src .venv/bin/python scripts/audit_journal_readiness.py \
+  --campaign-id journal_v3_full_20260219_000231 \
+  --campaign-root /home/ali/code/UAV/uav_tr_e_project/outputs/campaigns \
+  --json-out outputs/audit/journal_readiness_journal_v3_full_20260219_000231.json \
+  --fail-on-critical --fail-on-high
 ```
 
-## Audit + Writing Pack
+## 4) Build manuscript package + review bundles
 ```bash
-PYTHONPATH=src .venv/bin/python scripts/audit_journal_readiness.py   --output-root outputs   --json-out outputs/audit/journal_readiness_journal_core_20260219_013349.json   --fail-on-critical
-
-PYTHONPATH=src .venv/bin/python scripts/generate_journal_core_writing_pack.py
+./scripts/build_manuscript_pack.sh \
+  --campaign-id journal_v3_full_20260219_000231 \
+  --campaign-root /home/ali/code/UAV/uav_tr_e_project/outputs/campaigns \
+  --submission-dir /home/ali/code/UAV/uav_tr_e_project/output/submission
 ```
 
-## Review Bundles
-```bash
-./scripts/make_review_pack.sh
-```
+## 5) Command provenance
+- Campaign run plan: `outputs/campaigns/journal_v3_full_20260219_000231/RUN_PLAN.json`
+- Command history: `outputs/campaigns/journal_v3_full_20260219_000231/COMMAND_LOG.csv`
+- Environment snapshot: `outputs/campaigns/journal_v3_full_20260219_000231/ENV_SNAPSHOT.json`
+- Launcher and stage logs: `outputs/campaigns/journal_v3_full_20260219_000231/logs/*.log`

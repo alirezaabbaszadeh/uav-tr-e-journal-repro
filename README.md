@@ -4,7 +4,7 @@ Journal-grade reproducibility repository for reliability-aware multi-UAV pickup 
 
 ## Scope
 - Main heuristic engine: OR-Tools with soft/hard TW support and net-load capacity dimension.
-- Baseline heuristic: PyVRP (reported as baseline/ablation when feasible coverage degrades).
+- Baseline heuristic: PyVRP (baseline/ablation).
 - Exact/bound engine: HiGHS MIP with certificate-aware claim policy.
 - Scientific claim policy:
   - `N <= 10`: exact claim only with optimality certificate.
@@ -13,9 +13,10 @@ Journal-grade reproducibility repository for reliability-aware multi-UAV pickup 
 
 ## Repository Layout
 - `src/uavtre/` core package.
-- `configs/` base config and profile overrides.
+- `configs/` base config, v3 profiles, and A/B calibrated overrides.
 - `benchmarks/frozen/` frozen benchmark instances.
-- `outputs/` generated CSVs and figures.
+- `outputs/` generated CSVs, campaign folders, and audits.
+- `output/submission/` manuscript pack artifacts.
 - `submission/anonymous/` and `submission/camera_ready/` review bundles.
 
 ## Quick Start (venv)
@@ -31,50 +32,84 @@ Quick deterministic run:
 ./scripts/run_quick.sh
 ```
 
-## Journal Campaign (Calibrated + Claim-Ready)
-Main table + scalability (TW family A):
+## V3 Robust Campaign (CPU-Sharded)
+Run full two-stage campaign (A/B, core + robustness):
 ```bash
-MAIN_MAX_CASES=48 SCAL_MAX_CASES=16 RUN_TW_B=0 ./scripts/run_v2_core_pipeline.sh
+PYTHONPATH=src ./scripts/run_journal_v3_robust.sh
 ```
 
-Main table + scalability for both TW families A and B:
+Useful environment overrides:
 ```bash
-MAIN_MAX_CASES=48 SCAL_MAX_CASES=16 RUN_TW_B=1 ./scripts/run_v2_core_pipeline.sh
+CAMPAIGN_ID=journal_v3_demo NUM_SHARDS=12 MAX_CASES=0 \
+RUN_STAGE1_CORE=1 RUN_STAGE2_ROBUST=1 \
+PYTHONPATH=src ./scripts/run_journal_v3_robust.sh
 ```
 
-Outputs:
-- `outputs/main_table_v2_core/`, `outputs/scalability_v2_core/`, `outputs/paper_v2_core/` (TW A)
-- `outputs/main_table_v2_core_B/`, `outputs/scalability_v2_core_B/`, `outputs/paper_v2_core_B/` (TW B)
+Campaign artifacts are written to:
+- `outputs/campaigns/<campaign_id>/...`
+- `outputs/audit/journal_readiness_<campaign_id>.json`
+
+Campaign metadata files:
+- `CAMPAIGN_MANIFEST.json`
+- `RUN_PLAN.json`
+- `ENV_SNAPSHOT.json`
+- `COMMAND_LOG.csv`
+
+## Manuscript Pack (Campaign-Locked)
+Build manuscript-support artifacts and reviewer bundles from one campaign:
+```bash
+./scripts/build_manuscript_pack.sh \
+  --campaign-id <campaign_id> \
+  --campaign-root outputs/campaigns \
+  --submission-dir output/submission
+```
+
+Generated campaign-suffixed files:
+- `output/submission/claim_evidence_map_<campaign_id>.md`
+- `output/submission/results_discussion_draft_<campaign_id>.md`
+- `output/submission/next_steps_<campaign_id>.md`
+- `output/submission/TABLE_FIGURE_INDEX_<campaign_id>.md`
+- `output/submission/MANUSCRIPT_PACK_MANIFEST_<campaign_id>.json`
 
 ## Public CLI Interfaces
 ```bash
 python -m uavtre.run_experiments --config configs/base.json --output outputs/results_main.csv
-python -m uavtre.run_benchmarks --config configs/base.json --profile main_table
-python -m uavtre.make_review_pack --mode anonymous
-python -m uavtre.make_review_pack --mode camera_ready
+
+python -m uavtre.run_benchmarks \
+  --config configs/base.json \
+  --profile main_table \
+  --profile-override configs/overrides/main_table_v3_core_fullseed_A_calibrated.json \
+  --output outputs/results_main.csv \
+  --benchmark-dir benchmarks/frozen \
+  --shard-index 0 --num-shards 12 --resume \
+  --campaign-id journal_v3_demo --stage-tag core_main_A
+
+python -m uavtre.make_review_pack --mode anonymous --campaign-id journal_v3_demo
+python -m uavtre.make_review_pack --mode camera_ready --campaign-id journal_v3_demo
 ```
 
 ## Outputs
-- `outputs/results_main.csv`
-- `outputs/results_routes.csv`
-- `outputs/results_significance.csv`
+- `results_main.csv`
+- `results_routes.csv`
+- `results_significance.csv`
 
-`results_significance.csv` includes adjusted p-values (Holm), effect size, CI, and pair counts.
+`results_significance.csv` includes Holm-adjusted p-values, effect size, CI, and pair counts.
 
-## Determinism and Reproducibility
-- Deterministic seeds are explicit in configs.
-- Base communication profile is calibrated (`snr_threshold_db=25.0`) and can be re-calibrated via `scripts/calibrate_comm_profile.py`.
-- Frozen benchmark instances are generated under `benchmarks/frozen/`.
-- Outputs include `run_id`, `profile`, `git_sha` (or deterministic fallback hash), and `timestamp`.
-- Reproduction instructions: see `REPRODUCIBILITY.md`.
-
-## Review Packaging
-Generate both bundles:
+## Journal Readiness Audit
+Run gate check for a campaign:
 ```bash
-./scripts/make_review_pack.sh
+PYTHONPATH=src .venv/bin/python scripts/audit_journal_readiness.py \
+  --campaign-id <campaign_id> \
+  --campaign-root outputs/campaigns \
+  --json-out outputs/audit/journal_readiness_<campaign_id>.json \
+  --fail-on-critical --fail-on-high
 ```
 
-Bundle manifests are produced as `submission/*/BUNDLE_MANIFEST.json`.
+## Review Packaging
+Campaign-scoped bundles:
+```bash
+CAMPAIGN_ID=<campaign_id> CAMPAIGN_ROOT=outputs/campaigns ./scripts/make_review_pack.sh
+```
 
 ## Docker Workflow
 ```bash
@@ -85,10 +120,3 @@ docker run --rm -v "$PWD":/workspace -w /workspace uavtre:1.0.0 \
 
 ## License
 MIT (see `LICENSE`).
-
-## Journal Readiness Audit
-Run the automated gate check after campaign runs:
-```bash
-PYTHONPATH=src .venv/bin/python scripts/audit_journal_readiness.py --output-root outputs --fail-on-critical
-```
-A JSON audit report is written to `outputs/audit/`.

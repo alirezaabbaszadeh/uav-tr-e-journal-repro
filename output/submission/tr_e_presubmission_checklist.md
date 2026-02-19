@@ -1,12 +1,10 @@
-# TR-E Pre-Submission Checklist (Journal-Core)
+# TR-E Pre-Submission Checklist (journal_v3_full_20260219_000231)
 
-- [x] Campaign outputs generated for Family A and B (`N=10/20/40/80`).
-- [x] Journal-readiness audit passed (`outputs/audit/journal_readiness_journal_core_20260219_013349.json`).
-- [x] Main artifacts present: `results_main`, `results_routes`, `results_significance`.
-- [x] Claim-evidence map generated (`output/submission/claim_evidence_map_journal_core.md`).
-- [x] Results/discussion draft generated (`output/submission/results_discussion_draft_journal_core.md`).
-- [x] Highlights generated and validated (`<=85` chars each).
-- [x] Double-anonymous package generated (`submission/anonymous/`).
-- [x] Camera-ready package generated (`submission/camera_ready/`).
-- [x] Frozen benchmark publication includes full set (`benchmarks/frozen/main_table_full`, `benchmarks/frozen/scalability_full`).
-- [x] License and citation metadata included (`LICENSE`, `CITATION.cff`).
+- [x] Campaign outputs fixed to `outputs/campaigns/journal_v3_full_20260219_000231/`.
+- [x] Audit passes and is archived at `outputs/audit/journal_readiness_journal_v3_full_20260219_000231.json`.
+- [x] Claim map generated at `output/submission/claim_evidence_map_journal_v3_full_20260219_000231.md`.
+- [x] Discussion draft generated at `output/submission/results_discussion_draft_journal_v3_full_20260219_000231.md`.
+- [x] Next steps generated at `output/submission/next_steps_journal_v3_full_20260219_000231.md`.
+- [x] Table index generated at `output/submission/TABLE_FIGURE_INDEX_journal_v3_full_20260219_000231.md`.
+- [x] Manifest generated at `output/submission/MANUSCRIPT_PACK_MANIFEST_journal_v3_full_20260219_000231.json`.
+- [x] Anonymous and camera-ready bundles regenerated with `--campaign-id`.

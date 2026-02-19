@@ -1,0 +1,99 @@
+{
+  "generated_at_utc": "2026-02-19T04:38:33.139652+00:00",
+  "campaign_id": "journal_v3_full_20260219_000231",
+  "campaign_root": "/home/ali/code/UAV/uav_tr_e_project/outputs/campaigns",
+  "campaign_dir": "/home/ali/code/UAV/uav_tr_e_project/outputs/campaigns/journal_v3_full_20260219_000231",
+  "audit_json": "/home/ali/code/UAV/uav_tr_e_project/outputs/audit/journal_readiness_journal_v3_full_20260219_000231.json",
+  "audit_summary": {
+    "total_gates": 25,
+    "critical_failed": 0,
+    "high_failed": 0,
+    "medium_failed": 0,
+    "overall_pass": true
+  },
+  "runtime_strategy": {
+    "execution": "cpu_sharded",
+    "num_shards": 12,
+    "source": "/home/ali/code/UAV/uav_tr_e_project/outputs/campaigns/journal_v3_full_20260219_000231/RUN_PLAN.json"
+  },
+  "source_tables": {
+    "paper_A": [
+      "outputs/campaigns/journal_v3_full_20260219_000231/paper_A/table_feasibility_rate.csv",
+      "outputs/campaigns/journal_v3_full_20260219_000231/paper_A/table_gap_summary.csv",
+      "outputs/campaigns/journal_v3_full_20260219_000231/paper_A/table_main_kpi_summary.csv",
+      "outputs/campaigns/journal_v3_full_20260219_000231/paper_A/table_managerial_insight_support.csv",
+      "outputs/campaigns/journal_v3_full_20260219_000231/paper_A/table_risk_signal_check.csv",
+      "outputs/campaigns/journal_v3_full_20260219_000231/paper_A/table_scalability_raw.csv"
+    ],
+    "paper_B": [
+      "outputs/campaigns/journal_v3_full_20260219_000231/paper_B/table_feasibility_rate.csv",
+      "outputs/campaigns/journal_v3_full_20260219_000231/paper_B/table_gap_summary.csv",
+      "outputs/campaigns/journal_v3_full_20260219_000231/paper_B/table_main_kpi_summary.csv",
+      "outputs/campaigns/journal_v3_full_20260219_000231/paper_B/table_managerial_insight_support.csv",
+      "outputs/campaigns/journal_v3_full_20260219_000231/paper_B/table_risk_signal_check.csv",
+      "outputs/campaigns/journal_v3_full_20260219_000231/paper_B/table_scalability_raw.csv"
+    ],
+    "paper_combined": [
+      "outputs/campaigns/journal_v3_full_20260219_000231/paper_combined/table_feasibility_rate.csv",
+      "outputs/campaigns/journal_v3_full_20260219_000231/paper_combined/table_gap_summary.csv",
+      "outputs/campaigns/journal_v3_full_20260219_000231/paper_combined/table_main_kpi_summary.csv",
+      "outputs/campaigns/journal_v3_full_20260219_000231/paper_combined/table_managerial_insight_support.csv",
+      "outputs/campaigns/journal_v3_full_20260219_000231/paper_combined/table_risk_signal_check.csv",
+      "outputs/campaigns/journal_v3_full_20260219_000231/paper_combined/table_scalability_raw.csv"
+    ]
+  },
+  "significance_rows": {
+    "family_A": 15,
+    "family_B": 15,
+    "family_A_significant": 12,
+    "family_B_significant": 12
+  },
+  "claims_policy": {
+    "C5_policy": "conservative",
+    "N<=10": "exact_with_certificate",
+    "N20_40": "bound_gap",
+    "N80": "scalability_only"
+  },
+  "artifacts": [
+    {
+      "path": "output/submission/claim_evidence_map_journal_v3_full_20260219_000231.md",
+      "sha256": "069d38b0d2f08b8254fead5618ce6de868fa6ad837e1524dde184ebe3c682a21",
+      "bytes": 4475
+    },
+    {
+      "path": "output/submission/results_discussion_draft_journal_v3_full_20260219_000231.md",
+      "sha256": "8ca1ab7af152747ba177bcffabfe5eba06ce61883f4744cc95d0cb2888a51e88",
+      "bytes": 1470
+    },
+    {
+      "path": "output/submission/next_steps_journal_v3_full_20260219_000231.md",
+      "sha256": "01a356c103f928d1579908fc60ed12828c83bdb635a5705476497d33ba2dbe35",
+      "bytes": 483
+    },
+    {
+      "path": "output/submission/TABLE_FIGURE_INDEX_journal_v3_full_20260219_000231.md",
+      "sha256": "e74253ce08c7ba7e53fca72adcfadfb86c4c1d47fa479235b9aff8ec410425c3",
+      "bytes": 1778
+    },
+    {
+      "path": "output/submission/proposal_highlights.txt",
+      "sha256": "7940e5985727dc28fd32184066ade1d9521ff2a3950030c3cc03942e852b6dd5",
+      "bytes": 350
+    },
+    {
+      "path": "output/submission/cover_letter_draft.txt",
+      "sha256": "74bb30de2ac008eaa9e3e5dc1c693a58f9fd2e49b95649f45837979f20429e7d",
+      "bytes": 566
+    },
+    {
+      "path": "output/submission/tr_e_presubmission_checklist.md",
+      "sha256": "b91b8d383e4a39582c580a7579aabff38e2a798faec03e398e08c01466b2b57d",
+      "bytes": 873
+    },
+    {
+      "path": "output/submission/build_instructions.md",
+      "sha256": "0b807e08c063f6895c766160da45bad9b51f078846ee7516856ae8b2b281a0a9",
+      "bytes": 1436
+    }
+  ]
+}

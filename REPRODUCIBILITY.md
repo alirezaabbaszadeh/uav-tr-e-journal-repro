@@ -18,50 +18,75 @@ Expected artifacts:
 - `outputs/results_routes.csv`
 - `outputs/results_significance.csv`
 
-## 2) Journal Campaign (Calibrated Communication)
-TW Family A only:
+## 2) V3 Robust Campaign (Two-Stage, CPU-Sharded)
 ```bash
-MAIN_MAX_CASES=48 SCAL_MAX_CASES=16 RUN_TW_B=0 ./scripts/run_v2_core_pipeline.sh
+CAMPAIGN_ID=journal_v3_<ts> NUM_SHARDS=12 MAX_CASES=0 \
+RUN_STAGE1_CORE=1 RUN_STAGE2_ROBUST=1 \
+PYTHONPATH=src ./scripts/run_journal_v3_robust.sh
 ```
 
-TW Family A + B:
+Main outputs:
+- `outputs/campaigns/<campaign_id>/main_A_core/`
+- `outputs/campaigns/<campaign_id>/main_B_core/`
+- `outputs/campaigns/<campaign_id>/scal_A_core/`
+- `outputs/campaigns/<campaign_id>/scal_B_core/`
+- `outputs/campaigns/<campaign_id>/main_A_robust/`
+- `outputs/campaigns/<campaign_id>/main_B_robust/`
+- `outputs/campaigns/<campaign_id>/main_A_k/`
+- `outputs/campaigns/<campaign_id>/main_B_k/`
+- `outputs/campaigns/<campaign_id>/scal_A_robust/`
+- `outputs/campaigns/<campaign_id>/scal_B_robust/`
+- `outputs/campaigns/<campaign_id>/paper_A/`, `paper_B/`, `paper_combined/`
+
+Campaign traceability files:
+- `outputs/campaigns/<campaign_id>/CAMPAIGN_MANIFEST.json`
+- `outputs/campaigns/<campaign_id>/RUN_PLAN.json`
+- `outputs/campaigns/<campaign_id>/ENV_SNAPSHOT.json`
+- `outputs/campaigns/<campaign_id>/COMMAND_LOG.csv`
+- `outputs/campaigns/<campaign_id>/logs/*.log`
+
+## 3) Shard Merge Contract
+Each shard writes to:
+- `<stage_dir>/shards/shard_XX/results_main.csv`
+- `<stage_dir>/shards/shard_XX/results_routes.csv`
+
+Merging is deterministic via:
 ```bash
-MAIN_MAX_CASES=48 SCAL_MAX_CASES=16 RUN_TW_B=1 ./scripts/run_v2_core_pipeline.sh
+PYTHONPATH=src .venv/bin/python scripts/merge_sharded_results.py \
+  --shards-root <stage_dir>/shards \
+  --output-dir <stage_dir> \
+  --require-shards 12
 ```
 
-Paper tables:
-- `outputs/paper_v2_core/`
-- `outputs/paper_v2_core_B/`
-
-## 3) Frozen Benchmarks
-Generate/refresh a deterministic set:
+## 4) Audit Gates
 ```bash
-python -m uavtre.run_benchmarks --config configs/base.json --profile main_table --benchmark-dir benchmarks/frozen --output outputs/results_main.csv
+PYTHONPATH=src .venv/bin/python scripts/audit_journal_readiness.py \
+  --campaign-id <campaign_id> \
+  --campaign-root outputs/campaigns \
+  --json-out outputs/audit/journal_readiness_<campaign_id>.json \
+  --fail-on-critical --fail-on-high
 ```
 
-Re-running with unchanged code/config should recreate the same frozen files and consistent objectives within floating-point tolerance.
+The command fails non-zero when critical (or high, if requested) gates fail.
 
-## 4) CI-equivalent Local Check
+## 5) Manuscript Pack + Review Bundles
+Generate campaign-locked manuscript artifacts and bundles:
 ```bash
-pytest
-python -m uavtre.run_benchmarks --config configs/base.json --profile main_table --profile-override configs/profiles/ci_journal_smoke.json --output outputs/ci_main/results_main.csv --benchmark-dir benchmarks/frozen/ci_main --max-cases 3
-python -m uavtre.run_benchmarks --config configs/base.json --profile scalability --profile-override configs/profiles/ci_journal_smoke.json --output outputs/ci_scal/results_main.csv --benchmark-dir benchmarks/frozen/ci_scal --max-cases 2
+./scripts/build_manuscript_pack.sh \
+  --campaign-id <campaign_id> \
+  --campaign-root outputs/campaigns \
+  --submission-dir output/submission
 ```
 
-## 5) Review Package Generation
-```bash
-./scripts/make_review_pack.sh
-```
+Generated manuscript artifacts:
+- `output/submission/claim_evidence_map_<campaign_id>.md`
+- `output/submission/results_discussion_draft_<campaign_id>.md`
+- `output/submission/next_steps_<campaign_id>.md`
+- `output/submission/TABLE_FIGURE_INDEX_<campaign_id>.md`
+- `output/submission/MANUSCRIPT_PACK_MANIFEST_<campaign_id>.json`
 
-Packages are created in:
-- `submission/anonymous/`
-- `submission/camera_ready/`
-
-Each bundle includes `BUNDLE_MANIFEST.json` with artifact counts.
-
-## Journal-Readiness Gate
-After generating campaign outputs, run:
-```bash
-PYTHONPATH=src .venv/bin/python scripts/audit_journal_readiness.py --output-root outputs --fail-on-critical
-```
-The command fails on unmet critical criteria and writes a detailed JSON report under `outputs/audit/`.
+## 6) Determinism Expectations
+- Scenario generation is seed-driven.
+- Shard partition uses deterministic index modulo.
+- Resume mode skips already-existing `(run_id, method)` rows.
+- Re-running same campaign config and seed set should reproduce benchmark instances and policy-consistent outputs (within floating-point tolerance).

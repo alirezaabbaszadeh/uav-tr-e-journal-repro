@@ -25,31 +25,26 @@ MEDIUM = "medium"
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Audit journal-readiness gates.")
     parser.add_argument("--output-root", default="outputs", help="Root outputs directory.")
+    parser.add_argument("--campaign-id", default=None, help="Optional campaign id under outputs/campaigns.")
     parser.add_argument(
-        "--main-a",
-        default="outputs/main_table_v2_core/results_main.csv",
-        help="Main-table TW-A results_main path.",
+        "--campaign-root",
+        default="outputs/campaigns",
+        help="Campaign root when --campaign-id is provided.",
     )
-    parser.add_argument(
-        "--scal-a",
-        default="outputs/scalability_v2_core/results_main.csv",
-        help="Scalability TW-A results_main path.",
-    )
-    parser.add_argument(
-        "--main-b",
-        default="outputs/main_table_v2_core_B/results_main.csv",
-        help="Main-table TW-B results_main path.",
-    )
-    parser.add_argument(
-        "--scal-b",
-        default="outputs/scalability_v2_core_B/results_main.csv",
-        help="Scalability TW-B results_main path.",
-    )
+    parser.add_argument("--main-a", default=None, help="Main-table TW-A results_main path.")
+    parser.add_argument("--scal-a", default=None, help="Scalability TW-A results_main path.")
+    parser.add_argument("--main-b", default=None, help="Main-table TW-B results_main path.")
+    parser.add_argument("--scal-b", default=None, help="Scalability TW-B results_main path.")
     parser.add_argument("--json-out", default=None, help="Optional explicit JSON report output path.")
     parser.add_argument(
         "--fail-on-critical",
         action="store_true",
         help="Exit non-zero if any critical gate fails.",
+    )
+    parser.add_argument(
+        "--fail-on-high",
+        action="store_true",
+        help="Exit non-zero if any high-severity gate fails.",
     )
     return parser.parse_args()
 
@@ -118,7 +113,8 @@ def _check_scalability_policy(df: pd.DataFrame) -> tuple[int, int]:
 
 
 def _check_git_trace(df: pd.DataFrame) -> int:
-    return int(df["git_sha"].astype(str).str.contains("unknown", na=False).sum())
+    ser = df["git_sha"].astype(str)
+    return int(ser.str.contains(r"unknown|nogit-", regex=True, na=False).sum())
 
 
 def _collect_families(*dfs: pd.DataFrame | None) -> List[str]:
@@ -136,19 +132,85 @@ def _n_set(df: pd.DataFrame | None) -> Set[int]:
     return set(pd.to_numeric(df["N"], errors="coerce").dropna().astype(int).tolist())
 
 
+def _resolve_paths(args: argparse.Namespace) -> tuple[Path, Path, Path, Path, Path | None]:
+    if args.campaign_id:
+        camp = Path(args.campaign_root) / args.campaign_id
+        main_a = Path(args.main_a) if args.main_a else camp / "main_A_core" / "results_main.csv"
+        scal_a = Path(args.scal_a) if args.scal_a else camp / "scal_A_core" / "results_main.csv"
+        main_b = Path(args.main_b) if args.main_b else camp / "main_B_core" / "results_main.csv"
+        scal_b = Path(args.scal_b) if args.scal_b else camp / "scal_B_core" / "results_main.csv"
+        return main_a, scal_a, main_b, scal_b, camp
+
+    main_a = Path(args.main_a) if args.main_a else Path("outputs/main_table_v2_core/results_main.csv")
+    scal_a = Path(args.scal_a) if args.scal_a else Path("outputs/scalability_v2_core/results_main.csv")
+    main_b = Path(args.main_b) if args.main_b else Path("outputs/main_table_v2_core_B/results_main.csv")
+    scal_b = Path(args.scal_b) if args.scal_b else Path("outputs/scalability_v2_core_B/results_main.csv")
+    return main_a, scal_a, main_b, scal_b, None
+
+
+def _paired_case_count(df: pd.DataFrame, method_a: str, method_b: str, n: int) -> int:
+    key_cols = [
+        "seed",
+        "N",
+        "M",
+        "Delta_min",
+        "B",
+        "K",
+        "lambda_out",
+        "lambda_tw",
+        "tw_family",
+        "tw_mode",
+        "profile",
+    ]
+    required = set(key_cols + ["method"])
+    if not required.issubset(df.columns):
+        return 0
+
+    dfa = df[(df["method"] == method_a) & (pd.to_numeric(df["N"], errors="coerce") == n)]
+    dfb = df[(df["method"] == method_b) & (pd.to_numeric(df["N"], errors="coerce") == n)]
+    if dfa.empty or dfb.empty:
+        return 0
+
+    pa = dfa[key_cols].drop_duplicates()
+    pb = dfb[key_cols].drop_duplicates()
+    return int(len(pa.merge(pb, on=key_cols, how="inner")))
+
+
+def _check_significance_integrity(sig_df: pd.DataFrame) -> tuple[int, int]:
+    required_cols = ["p_value_adj", "effect_direction", "effect_size", "ci_low", "ci_high", "n_pairs"]
+    missing_cols = [c for c in required_cols if c not in sig_df.columns]
+    if missing_cols:
+        return 0, int(1e9)
+
+    invalid = sig_df.copy()
+    invalid["n_pairs_num"] = pd.to_numeric(invalid["n_pairs"], errors="coerce")
+    invalid_mask = (
+        invalid["p_value_adj"].isna()
+        | invalid["effect_direction"].isna()
+        | invalid["effect_size"].isna()
+        | invalid["ci_low"].isna()
+        | invalid["ci_high"].isna()
+        | invalid["n_pairs_num"].isna()
+        | (invalid["n_pairs_num"] <= 0)
+    )
+    return int(len(sig_df)), int(invalid_mask.sum())
+
+
 def main() -> None:
     args = parse_args()
     output_root = Path(args.output_root)
 
-    main_a_path = Path(args.main_a)
-    scal_a_path = Path(args.scal_a)
-    main_b_path = Path(args.main_b)
-    scal_b_path = Path(args.scal_b)
+    main_a_path, scal_a_path, main_b_path, scal_b_path, campaign_dir = _resolve_paths(args)
 
     main_a = _load_csv(main_a_path)
     scal_a = _load_csv(scal_a_path)
     main_b = _load_csv(main_b_path)
     scal_b = _load_csv(scal_b_path)
+
+    sig_a_path = main_a_path.parent / "results_significance.csv"
+    sig_b_path = main_b_path.parent / "results_significance.csv"
+    sig_a = _load_csv(sig_a_path)
+    sig_b = _load_csv(sig_b_path)
 
     gates: List[Dict[str, object]] = []
 
@@ -197,7 +259,7 @@ def main() -> None:
             "trace.main_a_git_sha",
             HIGH,
             unknown == 0,
-            f"TW-A main unknown git_sha count={unknown}",
+            f"TW-A main fallback git_sha rows={unknown}",
         )
         nset = _n_set(main_a)
         _gate(
@@ -280,6 +342,82 @@ def main() -> None:
         f"observed tw_families={families}",
     )
 
+    if sig_a is not None:
+        _gate(
+            gates,
+            "schema.sig_a",
+            HIGH,
+            list(sig_a.columns) == RESULTS_SIGNIFICANCE_COLUMNS,
+            f"TW-A significance schema at {sig_a_path}",
+        )
+        rows, invalid = _check_significance_integrity(sig_a)
+        _gate(
+            gates,
+            "stats.sig_a_fields",
+            HIGH,
+            rows > 0 and invalid == 0,
+            f"TW-A significance rows={rows}, invalid_rows={invalid}",
+        )
+    else:
+        _gate(gates, "files.sig_a_exists", HIGH, False, f"{sig_a_path} missing")
+
+    if sig_b is not None:
+        _gate(
+            gates,
+            "schema.sig_b",
+            HIGH,
+            list(sig_b.columns) == RESULTS_SIGNIFICANCE_COLUMNS,
+            f"TW-B significance schema at {sig_b_path}",
+        )
+        rows, invalid = _check_significance_integrity(sig_b)
+        _gate(
+            gates,
+            "stats.sig_b_fields",
+            HIGH,
+            rows > 0 and invalid == 0,
+            f"TW-B significance rows={rows}, invalid_rows={invalid}",
+        )
+    else:
+        _gate(gates, "files.sig_b_exists", HIGH, False, f"{sig_b_path} missing")
+
+    if main_a is not None:
+        c20 = _paired_case_count(main_a, "ortools_main", "pyvrp_baseline", 20)
+        c40 = _paired_case_count(main_a, "ortools_main", "pyvrp_baseline", 40)
+        _gate(
+            gates,
+            "stats.main_a_pair_coverage_n20_n40",
+            HIGH,
+            c20 > 0 and c40 > 0,
+            f"TW-A pair coverage ortools-vs-pyvrp: N20={c20}, N40={c40}",
+        )
+
+    if main_b is not None:
+        c20 = _paired_case_count(main_b, "ortools_main", "pyvrp_baseline", 20)
+        c40 = _paired_case_count(main_b, "ortools_main", "pyvrp_baseline", 40)
+        _gate(
+            gates,
+            "stats.main_b_pair_coverage_n20_n40",
+            HIGH,
+            c20 > 0 and c40 > 0,
+            f"TW-B pair coverage ortools-vs-pyvrp: N20={c20}, N40={c40}",
+        )
+
+    if campaign_dir is not None:
+        required_campaign_files = [
+            campaign_dir / "CAMPAIGN_MANIFEST.json",
+            campaign_dir / "RUN_PLAN.json",
+            campaign_dir / "ENV_SNAPSHOT.json",
+            campaign_dir / "COMMAND_LOG.csv",
+        ]
+        missing = [str(p) for p in required_campaign_files if not p.exists()]
+        _gate(
+            gates,
+            "trace.campaign_metadata",
+            HIGH,
+            len(missing) == 0,
+            "campaign metadata files present" if not missing else f"missing={missing}",
+        )
+
     root_main = _load_csv(output_root / "results_main.csv")
     root_routes = _load_csv(output_root / "results_routes.csv")
     root_sig = _load_csv(output_root / "results_significance.csv")
@@ -336,6 +474,8 @@ def main() -> None:
 
     if args.fail_on_critical and critical_fail:
         raise SystemExit(1)
+    if args.fail_on_high and high_fail:
+        raise SystemExit(2)
 
 
 if __name__ == "__main__":

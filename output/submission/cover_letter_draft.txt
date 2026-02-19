@@ -1,12 +1,10 @@
 Dear Editor,
 
-Please consider our manuscript for publication in Transportation Research Part E.
+Please consider our manuscript for Transportation Research Part E.
 
-The work studies reliability-aware multi-UAV pickup and delivery under communication risk and soft time-window penalties, with an explicit claim policy by problem size (`N<=10` exact-with-certificate, `N=20/40` bound-gap, `N=80` scalability-only).
+The submission reports campaign-locked, reproducible evidence from `journal_v3_full_20260219_000231` for reliability-aware multi-UAV pickup and delivery with communication-risk and soft time-window penalties. Claims follow a strict size-regime policy (`N<=10` exact with certificate, `N=20/40` bound-gap, `N=80` scalability-only).
 
-All reported artifacts are reproducible from code. The journal-core campaign (`journal_core_20260219_013349`) passes the automated readiness gate (`18/18`), covers both TW families (A/B), and includes frozen benchmarks, deterministic runs, statistical outputs, and auto-generated anonymous/camera-ready bundles.
-
-Key results include: (i) OR-Tools remains feasible at `N=40` while PyVRP baseline does not; (ii) at `N=20`, OR-Tools mean bound-gaps are materially tighter than PyVRP in both families (A: `7.74%` vs `15.23%`, B: `8.03%` vs `16.88%`); and (iii) stress windows (Family B) substantially reduce service quality for OR-Tools (`N=20` on-time `63.75% -> 28.75%`).
+All manuscript tables, claim mapping, and review bundles are generated directly from code and archived manifests/logs.
 
 Sincerely,
 Corresponding Author
